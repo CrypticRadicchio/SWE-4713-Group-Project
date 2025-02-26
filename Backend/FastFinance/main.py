@@ -43,15 +43,20 @@ async def register_user(user: User):
     return {"id": user.id}
 #weird shit going on tonight
 
-@app.post("users/update")
+@app.put("/users/update")
 async def update_user(user: User):
     for u in db:
         if user.id == u.id:
-            u.hashed_pass = user.hashed_pass
-            u.email = user.email
-            u.status = user.status
-            u.first_name = user.first_name
-            u.last_name = user.last_name
+            if user.hashed_pass is not None:
+                u.hashed_pass = user.hashed_pass
+            if user.email is not None:
+                u.email = user.email
+            if user.status is not None:
+                u.status = user.status
+            if user.first_name is not None:
+                u.first_name = user.first_name
+            if user.last_name is not None:
+                u.last_name = user.last_name
             return {f"User with ID {user.id} updated successfully."}
     raise HTTPException(
         status_code=404,
