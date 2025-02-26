@@ -1,24 +1,45 @@
-import FFEmail
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import List
+from userinfo import User, Role, Status
 
-flag = True
-while flag:
-    choice = input("Are you sending to one person? Y/N: ")
-    recipient = []
-    if choice.lower() != "y":
-        mult_flag = True
-        while mult_flag:
-            response = input("Enter the email of the next recipient (enter STOP when you are done): ")
-            if response == "STOP":
-                mult_flag = False
-            recipient.append(response)
-        recipient.pop()  # jank way of removing "STOP" from the end of the list
-    else:
-        recipient.append(input("Enter the email of your recipient: "))
-    subject = input("Enter the email subject: ")
-    body = input("Enter the email body: ")
-    print(FFEmail.send_email(recipient, subject, body))
+app = FastAPI()
 
-    choice = input("Send another email? Y/N: ")
-    if choice != "Y":
-        print("Goodbye!")
-        flag = False
+db: List[User] = [
+    User(
+        id="testAdmin",
+        hashed_pass="temp",
+        # email is default for now so this test user can receive emails
+        role = Role.admin,
+        status=True,
+        first_name="Dave",
+        last_name="Administrator"
+    ),
+    User(
+        id="sampleAccountant",
+        hashed_pass="temp",
+        # email is default for now so this test user can receive emails
+        role=Role.accountant,
+        status=True,
+        first_name="John",
+        last_name="Accounting"
+    )
+]
+
+class Request(BaseModel):
+    type: str = None
+    req: str = None
+
+@app.get("/")
+async def root():
+    return {"Greeting": "Hello team. I have successfully hosted my API through ngrok. I am on a roll tonight."}
+
+@app.get("/api/v1/users")
+async def fetch_users():
+    return db
+
+@app.post("/api/v1/postuser")
+async def register_user(user: User):
+    db.append(user)
+    return {"id": user.id}
+#weird shit going on tonight
