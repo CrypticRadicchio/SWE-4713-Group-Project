@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Employee Roster</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #007BFF;
+            color: #fff;
+            position: relative;
+            padding: 10px 20px;
+            height: 70px;
+        }
+        .logo {
+            position: absolute;
+            left: 20px;
+            top: 10px;
+            height: 50px;
+        }
+        .header-title {
+            text-align: center;
+            font-size: 2em;
+            margin: 0;
+            line-height: 70px;
+        }
+        .user-info {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .user-info .user-name {
+            margin-right: 10px;
+        }
+        .user-info img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+        }
+        .container {
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #dddddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .login-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007BFF;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- Logo in the top left -->
+        <img src="Logo.png" alt="Logo" class="logo">
+        <!-- Centered header title -->
+        <h1 class="header-title">Fast Finances</h1>
+        <!-- User name and picture in the top right -->
+        <div class="user-info">
+            <div class="user-name">User Name</div>
+            <img src="user.png" alt="User Picture">
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Employee Roster</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Doe</td>
+                    <td>Manager</td>
+                    <td>johndoe@example.com</td>
+                    <td>(123) 456-7890</td>
+                    <td>Active</td>
+                    <td>2020-01-01</td>
+                </tr>
+                <tr>
+                    <td>Jane Smith</td>
+                    <td>Accountant</td>
+                    <td>janesmith@example.com</td>
+                    <td>(234) 567-8901</td>
+                    <td>Active</td>
+                    <td>2020-01-01</td>
+                </tr>
+                <tr>
+                    <td>Mike Johnson</td>
+                    <td>Clerk</td>
+                    <td>mikejohnson@example.com</td>
+                    <td>(345) 678-9012</td>
+                    <td>Inactive</td>
+                    <td>2020-01-01</td>
+                </tr>
+                <!-- Add more rows as necessary -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Log out button in the bottom right -->
+    <button class="login-btn" onclick="window.location.href='LoginPage.html'">LogOut</button>
+</body>
+</html>

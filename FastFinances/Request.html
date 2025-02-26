@@ -1,0 +1,167 @@
+\<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fast Finances - Request Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .loading {
+            font-size: 1.2em;
+            color: #555;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .retry-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .retry-button:hover {
+            background-color: #0056b3;
+        }
+        @media (max-width: 600px) {
+            table, th, td {
+                display: block;
+                width: 100%;
+            }
+            th {
+                display: none;
+            }
+            td {
+                display: block;
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 50%;
+                padding-left: 15px;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Request Data</h1>
+    <div id="content">
+        <div id="message" class="loading">Loading data...</div>
+        <button class="retry-button" style="display:none;" onclick="fetchData()">Retry</button>
+        <table id="dataTable" style="display:none;">
+            <thead>
+                <tr id="tableHeader"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const apiUrl = "https://b7a8-209-51-92-37.ngrok-free.app/users";
+
+        function buildTable(data) {
+            const tableHeader = document.getElementById("tableHeader");
+            const tableBody = document.getElementById("tableBody");
+
+            tableHeader.innerHTML = "";
+            tableBody.innerHTML = "";
+
+            if (!Array.isArray(data) || data.length === 0) {
+                document.getElementById("message").innerText = "No data available.";
+                return;
+            }
+
+            // Create table headers based on data keys
+            const headers = Object.keys(data[0]);
+            headers.forEach(header => {
+                const th = document.createElement("th");
+                th.innerText = header.charAt(0).toUpperCase() + header.slice(1); // Capitalize header text
+                th.addEventListener('click', () => sortTable(header, data)); // Add click event to each header for sorting
+                tableHeader.appendChild(th);
+            });
+
+            // Build table rows
+            data.forEach(item => {
+                const row = document.createElement("tr");
+                headers.forEach(header => {
+                    const cell = document.createElement("td");
+                    cell.innerText = item[header] !== undefined ? item[header] : '';
+                    cell.setAttribute('data-label', header);
+                    row.appendChild(cell);
+                });
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById("dataTable").style.display = "table";
+            document.getElementById("message").style.display = "none";
+            document.querySelector(".retry-button").style.display = "none";
+        }
+
+        function fetchData() {
+            document.getElementById("message").innerText = "Loading data...";
+            document.querySelector(".retry-button").style.display = "none";
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok, status " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    buildTable(data);
+                })
+                .catch(error => {
+                    document.getElementById("message").innerText = "Error loading data: " + error.message;
+                    document.getElementById("message").classList.add("error");
+                    document.querySelector(".retry-button").style.display = "inline-block";
+                    console.error("Fetch error: ", error);
+                });
+        }
+
+        function sortTable(header, data) {
+            const sortedData = [...data];
+            const isAsc = document.getElementById(header).classList.toggle("asc");
+            sortedData.sort((a, b) => {
+                let valA = a[header];
+                let valB = b[header];
+                if (typeof valA === "string" && typeof valB === "string") {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+                if (valA < valB) return isAsc ? -1 : 1;
+                if (valA > valB) return isAsc ? 1 : -1;
+                return 0;
+            });
+            buildTable(sortedData); // Rebuild table with sorted data
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>

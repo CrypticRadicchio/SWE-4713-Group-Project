@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Prompter - Fast Finances</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: #0078d7; /* Blue banner theme */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            position: relative;
+        }
+        
+        /* Header left section - logo */
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-left img {
+            height: 40px;
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        /* Header center section - title centered */
+        .header-center {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        /* Header right section - username and logo */
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-right img {
+            height: 30px;
+            width: auto;
+            margin-right: 5px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        /* Email Prompter form */
+        .email-form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .email-form label {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .email-form input[type="email"],
+        .email-form input[type="text"],
+        .email-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        
+        .email-form textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        
+        /* Buttons container */
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Logout button */
+        .logout-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Header with logo, title, username, and user logo -->
+    <header class="header">
+        <div class="header-left">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <div class="header-center">
+            Fast Finances
+        </div>
+        <div class="header-right">
+            <img src="username_logo.png" alt="User Logo">
+            <span>Username</span>
+        </div>
+    </header>
+
+    <!-- Main content: Email Prompter Form -->
+    <div class="main-content">
+        <form class="email-form">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" required>
+
+            <label for="body">Body</label>
+            <textarea id="body" name="body" required></textarea>
+
+            <div class="button-container">
+                <button type="submit">Send</button>
+                <button type="reset">Clear</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Logout button -->
+    <a href="LoginPage.html" class="logout-button">Logout</a>
+</body>
+</html>
