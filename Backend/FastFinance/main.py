@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 from userinfo import User, Role, Status
@@ -18,7 +18,6 @@ db: List[User] = [
     User(
         id="sampleAccountant",
         hashed_pass="temp",
-        # email is default for now so this test user can receive emails
         role=Role.accountant,
         status=True,
         first_name="John",
@@ -34,12 +33,27 @@ class Request(BaseModel):
 async def root():
     return {"Greeting": "Hello team. I have successfully hosted my API through ngrok. I am on a roll tonight."}
 
-@app.get("/api/v1/users")
+@app.get("/users")
 async def fetch_users():
     return db
 
-@app.post("/api/v1/postuser")
+@app.post("/users")
 async def register_user(user: User):
     db.append(user)
     return {"id": user.id}
 #weird shit going on tonight
+
+@app.post("users/update")
+async def update_user(user: User):
+    for u in db:
+        if user.id == u.id:
+            u.hashed_pass = user.hashed_pass
+            u.email = user.email
+            u.status = user.status
+            u.first_name = user.first_name
+            u.last_name = user.last_name
+            return {f"User with ID {user.id} updated successfully."}
+    raise HTTPException(
+        status_code=404,
+        detail=f"User with ID: {user.id} does not exist."
+    )
