@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <div class=""content></div>
+    <style>
+    .return-button-container {
+        position: fixed;
+        bottom: 33vh;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    </style>
+    <div class="return-button-container">
+        <button class="logout-button" onclick="window.location.href='Employee_Dashboard.html'" style="margin-top: 20px;">Return to Dashboard</button>
+    </div></div>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .header img {
+            height: 40px;
+            margin-right: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            flex-grow: 1;
+        }
+        .content {
+            padding: 20px;
+        }
+        .logout-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="Logo.png" alt="Logo">
+        <h1 style="flex-grow: 1; text-align: center;">Fast Finances</h1>
+        <button class="logout-button" onclick="logout()">Log Out</button>
+    </div>
+    <div class="content">   </div>
+        <h1>   Email Submission Successful</h1>
+        <p>   Your email has been successfully submitted.</p>
+        <p>   Thank you for using Fast Finances.</p>
+
+    </div>
+
+    <script>
+        function logout() {
+            window.location.href = 'LoginPage.html';
+        }
+    </script>
+</body>
+</html>

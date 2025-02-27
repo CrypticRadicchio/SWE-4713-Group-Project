@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            background-color: blue;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header img {
+            height: 50px;
+        }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .header .user-info img {
+            height: 40px;
+            margin-left: 10px;
+        }
+        .container {
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        .logout-button {
+            background-color: red;
+            color: white;
+        }
+        .submit-button {
+            background-color: green;
+            color: white;
+        }
+        .back-button {
+            background-color: gray;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="logo.png" alt="Logo">
+        <h1>Fast Finances</h1>
+        <div class="user-info">
+           
+            <img src="user-logo.png" alt="User Logo">
+         <span>Username</span>
+        </div>
+    </div> 
+    <div class="container">
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email">
+        </div>
+        <div class="form-group">
+            <label for="subject">Email Subject</label>
+            <input type="text" id="subject" name="subject">
+        </div>
+        <div class="form-group">
+            <label for="body">Email Body</label>
+            <textarea id="body" name="body" rows="10"></textarea>
+        </div>
+        <div class="buttons">
+            <button class="logout-button" onclick="window.location.href='LoginPage.html'" >Log Out</button>
+            <div>
+                <button class="back-button" onclick="window.location.href='Dashboard.html'">Back</button>
+                <button class="submit-button">Submit</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html></div></html>

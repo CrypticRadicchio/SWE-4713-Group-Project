@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .header {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            top: 0;
+            z-index: 1000;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+        }
+        .header img {
+            position: absolute;
+            left: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            width: 300px;
+            margin-top: 80px;
+        }
+        .container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        .container button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .container button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Popup style */
+        .popup {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 20px;
+            border: 2px solid #007bff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            display: none;
+        }
+
+        .popup h2 {
+            margin-top: 0;
+        }
+
+        .popup button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: transparent;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+    </style>
+    <script>
+        function hashPassword(password) {
+            return btoa(password);  // Base64 encoding as a placeholder
+        }
+
+        function generateUserId(firstName, lastName, dob) {
+            const date = new Date(dob);
+            const monthCode = ('0' + (date.getMonth() + 1)).slice(-2); 
+            const yearCode = date.getFullYear().toString().slice(-2); 
+            return firstName + lastName + monthCode + yearCode;
+        }
+
+        async function postData(url, data) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                alert("Account created successfully!");
+
+                // Wait 3 seconds before getting the latest user data
+                setTimeout(() => {
+                    getData(url);
+                }, 500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while creating your account.');
+            }
+        }
+
+        // Fetch the most recent user data from the server
+        async function getData(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const latestUser = data[data.length - 1]; // Assuming the latest user is at the end of the array
+                displayPopup(latestUser);
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Display the popup with user ID
+        function displayPopup(user) {
+            const popup = document.getElementById('popup');
+            popup.querySelector('.user-info').textContent = `User ID: ${user.id}`;
+            popup.style.display = 'block';
+        }
+
+        // Close the popup
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+
+            const firstName = document.querySelector('input[name="first_name"]').value;
+            const lastName = document.querySelector('input[name="last_name"]').value;
+            const email = document.querySelector('input[name="email"]').value;
+            const address = document.querySelector('input[name="address"]').value;
+            const dob = document.querySelector('input[name="DOB"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+            const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match. Please try again.');
+                return;
+            }
+
+            const userId = generateUserId(firstName, lastName, dob);
+            const hashedPass = hashPassword(password);
+
+            const userData = {
+                id: userId,
+                hashed_pass: hashedPass,
+                email: email,
+                role: "admin",
+                status: true,
+                first_name: firstName,
+                last_name: lastName,
+                address: address,
+                DOB: dob
+            };
+
+            const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
+
+            postData(apiUrl, userData);
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <img src="Logo.png" alt="Logo" width="70" height="70">
+        <h1>Fast Finances</h1>
+    </div>
+    <div class="container">
+        <h2>Create New Account</h2>
+        <form onsubmit="handleSubmit(event)">
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+            <input type="text" name="address" placeholder="Address" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="date" name="DOB" placeholder="Date of Birth" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <button type="submit">Submit</button>
+            <button type="button" class="back-btn" onclick="window.location.href='Dashboard.html'">Back To Dashboard</Menu></button>
+
+        </form>
+    </div>
+
+    <!-- Popup for new account info -->
+    <div id="popup" class="popup">
+        <button onclick="closePopup()">X</button>
+        <h2>New Account Created</h2>
+        <p class="user-info">Loading...</p>
+    </div>
+</body>
+</html>

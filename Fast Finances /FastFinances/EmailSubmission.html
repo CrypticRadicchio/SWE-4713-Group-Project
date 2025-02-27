@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .header img {
+            height: 40px;
+            margin-right: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            flex-grow: 1;
+        }
+        .content {
+            padding: 20px;
+        }
+        .logout-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="logo.png" alt="Logo">
+        <h1 style="flex-grow: 1; text-align: center;">Fast Finances</h1>
+        <button class="logout-button" onclick="logout()">Log Out</button>
+    </div>
+    <div class="content">   </div>
+        <h1>Email Submission Successful</h1>
+        <p>Your email has been successfully submitted. You will receive an email shortly with further instructions.</p>
+        <p>Thank you for using Fast Finances.</p>
+
+    </div>
+
+    <script>
+        function logout() {
+            window.location.href = 'LoginPage.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST Request Example</title>
+</head>
+<body>
+    <h1>POST Request to API</h1>
+    <pre id="api-response">Waiting for response...</pre>
+
+    <script>
+        const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
+    
+        const users = {
+            "id": "lol",
+            "hashed_pass": "admin",
+            "email": "lol@gmail.com",
+            "role": "admin",
+            "status": true,
+            "first_name": "lol",
+            "last_name": "Russell"
+        };
+    
+        async function postData(url, data) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',  // Ensure 'POST' is in uppercase
+                   
+                    body: JSON.stringify(data), 
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                });
+    
+                // Check if the response is OK (status 200-299)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+    
+                // Parse the JSON response
+                const responseData = await response.json();
+                
+                // Display the response data in the 'api-response' element
+                document.getElementById('api-response').textContent = JSON.stringify(responseData, null, 2);
+            } catch (error) {
+                // Handle any errors by displaying the error message
+                document.getElementById('api-response').textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+    
+        // Calling the postData function with the correct data
+        postData(apiUrl, users);
+    
+    </script>
+</body>
+</html>
