@@ -126,7 +126,15 @@
             <span>Username</span>
         </div>
     </header>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.email-form');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                window.location.href = 'EmailSubmission.html';
+            });
+        });
+    </script>
     <!-- Main content: Email Prompter Form -->
     <div class="main-content">
         <form class="email-form">

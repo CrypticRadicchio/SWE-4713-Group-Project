@@ -112,7 +112,8 @@
     <!-- Log out button in the bottom right -->
     <button class="login-btn" onclick="window.location.href='LoginPage.html'">LogOut</button>
     <button class="back-btn" onclick="window.location.href='Dashboard.html'">Back</button>
-
+    <button class="back-btn" onclick="window.location.href='Dashboard.html'"> Approve All </button>
+    
     <script>
         const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
 
@@ -125,7 +126,7 @@
                 const fullName = `${employee.first_name} ${employee.last_name}`;
                 const role = employee.role;
                 const email = employee.email;
-                const status = employee.status ? 'Active' : 'Inactive';
+                const status = employee.status ? 'Pending' : 'Pending';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Fact</title>
+</head>
+<body>
+    <h1>Random Cat Fact:</h1>
+    <p id="cat-fact">Loading...</p>
+
+    <script>
+        fetch('https://catfact.ninja/fact')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('cat-fact').textContent = data.fact;
+            })
+            .catch(error => {
+                document.getElementById('cat-fact').textContent = 'Error: ' + error;
+            });
+    </script>
+</body>
+</html>
