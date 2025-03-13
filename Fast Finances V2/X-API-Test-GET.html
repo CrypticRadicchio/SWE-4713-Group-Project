@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GET Request Example</title>
+</head>
+<body>
+    <h1>Users Data:</h1>
+    <pre id="api-response">Loading...</pre>
+
+    <script>
+        const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
+
+        // Function to handle the API response
+        function displayData(data) {
+            document.getElementById('api-response').textContent = JSON.stringify(data, null, 2
+            );
+        }
+
+        // Function to handle errors
+        function handleError(error) {
+            document.getElementById('api-response').textContent = 'Error: ' + error;
+            console.error('Error:', error);
+        }
+
+        // Function to fetch data from the API
+        async function getData(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayData(data);
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        // Call the function to get data
+        getData(apiUrl);
+    </script>
+</body>
+</html>
