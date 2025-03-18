@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Roster</title>
+    <style>
+        /* Your existing styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+        /* Additional styles omitted for brevity */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <img src="logo.png" alt="Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img src="profile.png" alt="User Profile">
+            <span class="username">Admin</span>
+        </div>
+    </header>
+    <div class="container">
+        <h2>Account Roster</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Account Name</th>
+                    <th>Account Number</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Initial Balance</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Balance</th>
+                    <th>Date Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="accountTableBody">
+                <!-- Dynamic content will be added here -->
+            </tbody>
+        </table>
+        
+        <div class="button-container">
+            <button class="btn btn-add" onclick="logEvent('Add Account')">Add Account</button>
+            <button class="btn btn-view">View Accounts</button>
+            <button class="btn btn-edit" onclick="logEvent('Edit Account')">Edit Account</button>
+            <button class="btn btn-deactivate" onclick="logEvent('Deactivate Account')">Deactivate Account</button>
+            <button class="btn btn-reactivate" onclick="logEvent('Reactivate Account')">Reactivate Account</button>
+        </div>
+
+        <div class="separate-buttons">
+            <button class="btn btn-logout">Logout</button>
+            <button class="btn btn-back">Back</button>
+            <button class="btn btn-main-menu">Main Menu</button>
+        </div>
+    </div>
+
+    <script>
+        // Simulate API call to load account data
+        function loadAccounts() {
+            let accounts = [
+                { name: "Cash", number: "1001", category: "Asset", subcategory: "Current Asset", initialBalance: "5,000.00", debit: "500.00", credit: "0.00", balance: "5,500.00", date: "2025-03-18" },
+                { name: "Accounts Receivable", number: "1002", category: "Asset", subcategory: "Current Asset", initialBalance: "8,000.00", debit: "1,000.00", credit: "200.00", balance: "8,800.00", date: "2025-03-17" }
+            ];
+            
+            let tableBody = document.getElementById("accountTableBody");
+            tableBody.innerHTML = "";
+            
+            accounts.forEach(account => {
+                let row = `<tr>
+                    <td>${account.name}</td>
+                    <td>${account.number}</td>
+                    <td>${account.category}</td>
+                    <td>${account.subcategory}</td>
+                    <td>${account.initialBalance}</td>
+                    <td>${account.debit}</td>
+                    <td>${account.credit}</td>
+                    <td>${account.balance}</td>
+                    <td>${account.date}</td>
+                    <td>
+                        <button class="btn btn-edit" onclick="logEvent('Edit Account', '${account.name}')">Edit</button>
+                        <button class="btn btn-deactivate" onclick="logEvent('Deactivate Account', '${account.name}')">Deactivate</button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Log the event with relevant details
+        function logEvent(action, accountName = '') {
+            const username = 'Admin'; // Ideally, this would be dynamically fetched
+            const timestamp = new Date().toISOString();
+            const logData = {
+                action: action,
+                account: accountName,
+                user: username,
+                timestamp: timestamp
+            };
+
+            // Log data to the console for demonstration (replace with actual API call)
+            console.log("Event Log:", logData);
+
+            // Example: Send log to your backend API (replace with your actual endpoint)
+            fetch('https://your-api-endpoint.com/log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(logData)
+            })
+            .then(response => response.json())
+            .then(data => console.log("Log saved successfully", data))
+            .catch(error => console.error("Error saving log", error));
+        }
+
+        document.addEventListener("DOMContentLoaded", loadAccounts);
+    </script>
+</body>
+</html>

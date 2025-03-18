@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Dashboard</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+
+        /* Header Styling */
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin: 0;
+        }
+
+        .header button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .header button:hover {
+            background-color: #e03e3e;
+            transform: scale(1.05);
+        }
+
+        /* Message Section */
+        .message {
+            text-align: center;
+            font-size: 18px;
+            color: #28a745;
+            margin: 20px 0;
+        }
+
+        /* Button Grid Container */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Button Styling */
+        .submit-btn, .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .submit-btn:hover, .button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* Admin Info (for user) */
+        .admin-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .admin-info img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="admin-info">
+            <img src="Logo.png" alt="Logo">
+            <h1>Fast Finances</h1>
+        </div>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div class="message">Successful Login</div>
+
+    <div class="container">
+        <button class="submit-btn" onclick="window.location.href='Management_Add_Account.html'">Create User</button>
+        <button class="submit-btn" onclick="window.location.href='Management-Employee-Roster-View.html'">User Roster</button>
+        <button class="submit-btn" onclick="window.location.href='Management-Email-Prompt.html'">Email</button>
+        <button class="submit-btn" onclick="window.location.href='Management-Employee-Roster-View.html'">Pending Roster</button>
+
+        <button class="button" onclick="notificationCenter()">Feature 2</button>
+        <button class="button" onclick="reportFiling()">Feature 3</button>
+        <button class="button" onclick="emailDirectory()">Feature 4</button>
+        <button class="button" onclick="employeeDirectory()">Feature 5</button>
+    </div>
+
+    <script>
+        function logout() {
+            window.location.href = 'Login.html';
+        }
+
+        function notificationCenter() {
+            // Add functionality here for feature 2
+        }
+
+        function reportFiling() {
+            // Add functionality here for feature 3
+        }
+
+        function emailDirectory() {
+            // Add functionality here for feature 4
+        }
+
+        function employeeDirectory() {
+            // Add functionality here for feature 5
+        }
+    </script>
+</body>
+</html>

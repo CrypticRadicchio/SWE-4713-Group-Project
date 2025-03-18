@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .banner {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .banner img {
+            height: 60px;
+            margin-right: 15px;
+        }
+        .banner h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .container {
+            max-width: 400px;
+            margin: 100px auto 0;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+        }
+        .container label {
+            align-self: flex-start;
+            margin-bottom: 5px;
+        }
+        .container input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .container button {
+            width: 48%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .container .submit-btn {
+            background-color: #007BFF;
+            color: white;
+        }
+        .container .back-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <img src="Logo.png" alt="Fast Finances Logo">
+        <h1>Fast Finances</h1>
+    </div>
+    <div class="container">
+        <h2>Security Questions</h2>
+        <form action="newpassword.html" method="POST">
+            <label for="question1">What is your favorite color?</label>
+            <input type="text" id="question1" name="question1" required>
+            
+            <label for="question2">What is the name of your first pet?</label>
+            <input type="text" id="question2" name="question2" required>
+            
+            <label for="question3">What city were you born in?</label>
+            <input type="text" id="question3" name="question3" required>
+            
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+                <button type="button" class="back-btn" onclick="window.location.href='ForgotPassword.html'">Back</button>
+                <button type="submit" class="submit-btn">Submit</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

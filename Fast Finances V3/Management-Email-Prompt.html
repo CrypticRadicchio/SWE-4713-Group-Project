@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Management Email Prompter - Fast Finances</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7; /* Light background for a clean look */
+        }
+
+        /* Header styles */
+        .header {
+            background-color: #0078d7; /* Blue banner theme */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+        }
+
+        /* Header left section - logo */
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-left img {
+            height: 50px;
+            width: auto;
+            margin-right: 15px;
+        }
+
+        /* Header center section - title centered */
+        .header-center {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* Header right section - username and logo */
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-right img {
+            height: 35px;
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .header-right span {
+            font-size: 18px;
+        }
+
+        .main-content {
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            background-color: #ffffff; /* White background for the form section */
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            margin: 20px auto;
+            max-width: 700px;
+        }
+
+        /* Email Prompter form */
+        .email-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .email-form label {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .email-form input[type="email"],
+        .email-form input[type="text"],
+        .email-form textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .email-form input[type="email"]:focus,
+        .email-form input[type="text"]:focus,
+        .email-form textarea:focus {
+            border-color: #0078d7;
+            box-shadow: 0 0 5px rgba(0, 120, 215, 0.3);
+            outline: none;
+        }
+
+        .email-form textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        /* Buttons container */
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+        }
+
+        .button-container button {
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .button-container button:hover {
+            background-color: #005ea6;
+            transform: scale(1.05);
+        }
+
+        .button-container button[type="reset"] {
+            background-color: #ccc;
+        }
+
+        .button-container button[type="reset"]:hover {
+            background-color: #bbb;
+        }
+
+        /* Logout button */
+        .logout-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 12px 20px;
+            background-color: #d70000;
+            color: white;
+            border: none;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #005ea6;
+            transform: scale(1.05);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Header with logo, title, username, and user logo -->
+    <header class="header">
+        <div class="header-left">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <div class="header-center">
+            Fast Finances
+        </div>
+        <div class="header-right">
+            <img src="Profile-Picture.png" alt="User Logo">
+            <span>Username</span>
+        </div>
+    </header>
+
+    <!-- Main content: Email Prompter Form -->
+    <div class="main-content">
+        <form class="email-form">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" required>
+
+            <label for="body">Body</label>
+            <textarea id="body" name="body" required></textarea>
+
+            <div class="button-container">
+                <button type="submit">Send</button>
+                <button type="reset">Clear</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Logout button -->
+    <a href="Login.html" class="logout-button">Logout</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.email-form');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                window.location.href = 'Management-Successful-Email-Sent.html';
+            });
+        });
+    </script>
+</body>
+</html>

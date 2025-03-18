@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Managment Employee Roster</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #007bff;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .header-title {
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+            margin-left: 50px; /* To give space for the logo */
+        }
+
+        /* User Info Section */
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            padding: 100px 20px 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 5px;
+        }
+
+        .btn-allow {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-deny {
+            background-color: #ff5733;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Button Container */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* Tooltip Styling */
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+            margin-top: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Login and Logout Buttons */
+        .auth-btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 40px;
+            position: absolute;
+            right: 20px;
+            bottom: 30px;
+        }
+
+        .auth-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .back-btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: absolute;
+            right: 120px;
+            bottom: 30px;
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* Spacing for Log Out and Back Buttons */
+        .auth-btn, .back-btn {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <img src="Logo.png" alt="Logo" class="logo">
+        <h1 class="header-title">Fast Finances</h1>
+        <div class="user-info">
+            <img src="user.png" alt="User Picture">
+            <div class="user-name">User Name</div>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container">
+        <h2>Employee Roster</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="employee-table-body">
+                <!-- Employee rows will be populated here -->
+            </tbody>
+        </table>
+
+        <!-- Action Buttons (Modified) -->
+        <div class="button-container">
+            <button class="btn btn-allow" data-tooltip="Approve the selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Allow</button>
+            <button class="btn btn-deny" data-tooltip="Deny the selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Deny</button>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- Login and Back buttons -->
+    <button class="auth-btn" onclick="window.location.href='Login.html'">Log Out</button>
+    <button class="back-btn" onclick="window.location.href='Management-Dashboard.html'">Back</button>
+
+    <script>
+        // Show Tooltip on Hover
+        function showTooltip(event) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = event.target.getAttribute('data-tooltip');
+            tooltip.style.display = 'block';
+            tooltip.style.left = `${event.pageX + 10}px`;
+            tooltip.style.top = `${event.pageY + 10}px`;
+        }
+
+        // Hide Tooltip
+        function hideTooltip(event) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.display = 'none';
+        }
+
+        // API URL to fetch employee data
+        const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
+
+        // Function to handle the API response and populate the table
+        function populateTable(data) {
+            const tableBody = document.getElementById('employee-table-body');
+            tableBody.innerHTML = ''; // Clear existing table rows
+
+            data.forEach(employee => {
+                const fullName = `${employee.first_name} ${employee.last_name}`;
+                const role = employee.role;
+                const email = employee.email;
+                const status = employee.status ? 'Active' : 'Inactive';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${fullName}</td>
+                    <td>${role}</td>
+                    <td>${email}</td>
+                    <td>${status}</td>
+                    <td>
+                        <button class="btn btn-allow" onclick="allowUser(${employee.id})">Allow</button>
+                        <button class="btn btn-deny" onclick="denyUser(${employee.id})">Deny</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to fetch employee data from the API
+        async function getData(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                populateTable(data); // Populate table with the fetched data
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Call the function to get data when the page loads
+        getData(apiUrl);
+    </script>
+</body>
+</html>
