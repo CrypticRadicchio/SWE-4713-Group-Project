@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
@@ -25,7 +24,6 @@ db: List[User] = [
         last_name="Accounting"
     )
 ]
-=======
 from calendar import month
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -56,7 +54,6 @@ app.add_middleware(
 
 
 # adding a comment here
->>>>>>> Stashed changes
 
 class Request(BaseModel):
     type: str = None
@@ -64,9 +61,7 @@ class Request(BaseModel):
 
 @app.get("/")
 async def root():
-<<<<<<< Updated upstream
     return {"Greeting": "Hello team. I have successfully hosted my API through ngrok. I am on a roll tonight."}
-=======
     client = MongoClient(uri, server_api=ServerApi('1'))
 
     # Send a ping to confirm a successful connection
@@ -77,14 +72,11 @@ async def root():
         return e
 
     #return {"Greeting": "You have accessed the root of the FastFinance API."}
->>>>>>> Stashed changes
 
 @app.get("/users")
 async def fetch_users():
     return db
 
-<<<<<<< Updated upstream
-=======
 @app.get("users/new_user")
 async def get_new_user_requests():
     """
@@ -157,15 +149,12 @@ async def forgot_pass(login_info: User, answer_list):
 
 
 # The primary way the admin will add a user to the system.
->>>>>>> Stashed changes
 @app.post("/users")
 async def register_user(user: User):
     db.append(user)
     return {"id": user.id}
 #weird shit going on tonight
 
-<<<<<<< Updated upstream
-=======
 @app.post("users/new_user")
 async def new_user(user_req: NewUserRequest):
     """
@@ -188,7 +177,6 @@ async def new_user(user_req: NewUserRequest):
 
 # the primary way an admin will update user info.
 # this includes changing personal info about the user and activating or deactivating them
->>>>>>> Stashed changes
 @app.put("/users/update")
 async def update_user(user: User):
     for u in db:
@@ -207,12 +195,9 @@ async def update_user(user: User):
     raise HTTPException(
         status_code=404,
         detail=f"User with ID: {user.id} does not exist."
-<<<<<<< Updated upstream
     )
-=======
-    )
+
 
 # @app.delete("/users/new_user")
 # async def delete_new_user_request(email: str):
 #     pass
->>>>>>> Stashed changes
