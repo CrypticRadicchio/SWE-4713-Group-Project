@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Employee Roster</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .header-title {
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+            margin-left: 50px; /* To give space for the logo */
+        }
+
+        /* User Info Section */
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            padding: 100px 20px 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 5px;
+        }
+
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-deactivate {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-modify {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        .btn-allow {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-deny {
+            background-color: #ff5733;
+            color: white;
+        }
+
+        .btn-suspend {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Button Container */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* Tooltip Styling */
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+            margin-top: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Login and Logout Buttons */
+        .auth-btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 40px;
+            position: absolute;
+            right: 20px;
+            bottom: 30px;
+        }
+
+        .auth-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .back-btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: absolute;
+            right: 120px;
+            bottom: 30px;
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* Spacing for Log Out and Back Buttons */
+        .auth-btn, .back-btn {
+            margin-top: 30px;
+        }
+
+        /* Strikethrough for Denied Users */
+        .strikethrough {
+            text-decoration: line-through;
+            color: #dc3545; /* Red color for denied users */
+        }
+
+        #confirmationMessage {
+            color: green;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <img src="Logo.png" alt="Logo" class="logo">
+        <h1 class="header-title">Fast Finances</h1>
+        <div class="user-info">
+            <img src="Admin.png" alt="User Picture">
+            <div class="user-name" id="admin-username">Admin</div>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container">
+        <h2>Employee Roster</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="employee-table-body">
+                <!-- Employee rows will be populated here -->
+            </tbody>
+        </table>
+
+        <!-- Action Buttons -->
+        <div class="button-container">
+            <button class="btn btn-deactivate" data-tooltip="Deactivate selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)" onclick="processSelection('deactivate')">Deny User</button>
+            <button class="btn btn-allow" data-tooltip="Allow the selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)" onclick="processSelection('allow')">Allow User</button>
+        </div>
+
+        <!-- Confirmation Message -->
+        <div id="confirmationMessage"></div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- Login and Back buttons -->
+    <button class="auth-btn" onclick="window.location.href='Login.html'">Log Out</button>
+    <button class="back-btn" onclick="window.location.href='Admin-Dashboard.html'">Back</button>
+
+    <script>
+        let usersDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+
+        // Display the last user's username in the header
+        function displayLastUser() {
+            const lastUser = usersDatabase.users[usersDatabase.users.length - 1]; // Get the last user added
+            if (lastUser) {
+                document.getElementById("admin-username").textContent = `${lastUser.first_name} ${lastUser.last_name}`; // Display their full name
+            }
+        }
+
+        // Show Tooltip on Hover
+        function showTooltip(event) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = event.target.getAttribute('data-tooltip');
+            tooltip.style.display = 'block';
+            tooltip.style.left = `${event.pageX + 10}px`;
+            tooltip.style.top = `${event.pageY + 10}px`;
+        }
+
+        // Hide Tooltip
+        function hideTooltip(event) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.display = 'none';
+        }
+
+        // Populate Table
+        function populateTable(data) {
+            const tableBody = document.getElementById('employee-table-body');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            data.users.forEach(user => {
+                const fullName = `${user.first_name} ${user.last_name}`; // Display first and last name
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" class="user-checkbox" data-id="${user.id}"></td>
+                    <td class="${user.status === false ? 'strikethrough' : ''}">${fullName}</td>
+                    <td>${user.role}</td>
+                    <td>${user.email}</td>
+                    <td>${user.status ? 'Active' : 'Inactive'}</td>
+                    <td>
+                        <button class="btn btn-modify" onclick="modifyUser(${user.id})">Modify</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Process selected users (Allow or Deactivate)
+        function processSelection(action) {
+            const selectedUsers = [];
+            document.querySelectorAll('.user-checkbox:checked').forEach(checkbox => {
+                const userId = checkbox.getAttribute('data-id');
+                const user = usersDatabase.users.find(u => u.id == userId);
+                if (user) {
+                    selectedUsers.push(user);
+                    if (action === 'deactivate') {
+                        user.status = false;
+                        // Cross out the user's name visually
+                        const row = checkbox.closest('tr');
+                        row.querySelector('td:nth-child(2)').classList.add('strikethrough');
+                    } else if (action === 'allow') {
+                        // Allow user: do nothing but show confirmation message
+                        document.getElementById('confirmationMessage').textContent = `User ${user.first_name} ${user.last_name} is allowed to continue.`;
+                    }
+                }
+            });
+
+            // Update the users in the database after processing
+            localStorage.setItem("userDatabase", JSON.stringify(usersDatabase));
+            populateTable(usersDatabase);
+        }
+
+        // Modify User (logic to modify user)
+        function modifyUser(userId) {
+            alert(`Modify user with ID: ${userId}`);
+        }
+
+        window.onload = () => {
+            displayLastUser(); // Show the last user in the header
+            populateTable(usersDatabase); // Populate the table with users
+        };
+
+    </script>
+</body>
+</html>

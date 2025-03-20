@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Roster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            height: 50px;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .btn {
+            padding: 8px 12px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            margin: 2px;
+        }
+        .btn-add { background-color: #28a745; }
+        .btn-view { background-color: #007bff; }
+        .btn-edit { background-color: #ffc107; }
+        .btn-deactivate { background-color: #dc3545; }
+        .btn-reactivate { background-color: #17a2b8; }
+        .btn-logout { background-color: #dc3545; }
+        .btn-back { background-color: #6c757d; }
+        .btn-main-menu { background-color: #007bff; }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .separate-buttons {
+            margin-top: 30px;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            padding: 8px;
+            width: 200px;
+            margin-bottom: 20px;
+        }
+        .date-picker {
+            padding: 8px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <img src="logo.png" alt="Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img id="profile-pic" src="profile.png" alt="User Profile">
+            <span id="username">Admin</span>
+        </div>
+    </header>
+    <div class="container">
+        <h2>Account Roster</h2>
+
+        <!-- Search Section -->
+        <div class="filter-container">
+            <label for="search">Search by Account Name:</label>
+            <input type="text" id="search" class="search-input" oninput="applySearchFilter()" placeholder="Search accounts...">
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Account Name</th>
+                    <th>Account Number</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Initial Balance</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Balance</th>
+                    <th>Date Added</th>
+                    <th>Date Picker</th> <!-- Added new column for date picker -->
+                </tr>
+            </thead>
+            <tbody id="accountTableBody">
+                <!-- Dynamic content will be added here -->
+            </tbody>
+        </table>
+
+        <div class="button-container">
+            <button class="btn btn-add" onclick="addAccount()">Add Account</button>
+            <button class="btn btn-view" onclick="loadAccounts()">View Accounts</button>
+        </div>
+
+        <div class="separate-buttons">
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
+            <button class="btn btn-back">Back</button>
+            <button class="btn btn-main-menu">Main Menu</button>
+            <button class="btn btn-edit" onclick="editAccount()">Edit Account</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedAccount = null;
+
+        // Load accounts from localStorage
+        function loadAccounts(searchValue = "") {
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const accounts = accountDatabase ? accountDatabase.accounts : [];
+
+            let tableBody = document.getElementById("accountTableBody");
+            tableBody.innerHTML = "";
+
+            // Filter the accounts based on search value
+            const filteredAccounts = accounts.filter(account => 
+                account.accountName.toLowerCase().includes(searchValue.toLowerCase())
+            );
+
+            filteredAccounts.forEach(account => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><input type="checkbox" class="select-checkbox" onclick="selectAccount(${account.accountNumber})"></td>
+                    <td>${account.accountName}</td>
+                    <td>${account.accountNumber}</td>
+                    <td>${account.accountCategory}</td>
+                    <td>${account.accountSubcategory}</td>
+                    <td>${account.initialBalance}</td>
+                    <td>${account.debit}</td>
+                    <td>${account.credit}</td>
+                    <td>${account.balance}</td>
+                    <td>${account.dateAdded}</td>
+                    <td><input type="date" class="date-picker" value="${account.dateAdded}" onchange="updateDate(${account.accountNumber}, this.value)"></td> <!-- Date Picker Input -->
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Apply search filter to accounts
+        function applySearchFilter() {
+            const searchValue = document.getElementById("search").value;
+            loadAccounts(searchValue);
+        }
+
+        // Select an account
+        function selectAccount(accountNumber) {
+            selectedAccount = accountNumber;
+        }
+
+        // Update date for selected account
+        function updateDate(accountNumber, newDate) {
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const accounts = accountDatabase ? accountDatabase.accounts : [];
+            const accountToUpdate = accounts.find(account => account.accountNumber === accountNumber);
+            if (accountToUpdate) {
+                accountToUpdate.dateAdded = newDate; // Update the date field
+                localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase)); // Save the updated data
+            }
+        }
+
+        // Edit the selected account
+        function editAccount() {
+            if (selectedAccount === null) {
+                alert("Please select an account to edit.");
+                return;
+            }
+
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const accounts = accountDatabase ? accountDatabase.accounts : [];
+
+            const selectedAccountData = accounts.find(account => account.accountNumber === selectedAccount);
+            if (selectedAccountData) {
+                // Save selected account data to localStorage for editing
+                localStorage.setItem("selectedAccountData", JSON.stringify(selectedAccountData));
+
+                // Redirect to the edit-account page
+                window.location.href = "edit-account.html";
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem("currentUser");
+            window.location.href = "login.html"; // Redirect to login page or reload
+        }
+
+        // Load the accounts when the page is loaded
+        document.addEventListener("DOMContentLoaded", function() {
+            loadAccounts();
+        });
+    </script>
+</body>
+</html>

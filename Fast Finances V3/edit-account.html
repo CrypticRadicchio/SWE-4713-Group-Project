@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Account</title>
+    <style>
+        /* You can copy the same styling from the previous page */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <img src="logo.png" alt="Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Edit Account</h2>
+
+        <!-- Account Edit Form -->
+        <form id="editAccountForm">
+            <div class="form-group">
+                <input type="text" id="accountName" placeholder="Account Name">
+                <input type="text" id="accountNumber" placeholder="Account Number" disabled>
+            </div>
+            <div class="form-group">
+                <input type="text" id="accountCategory" placeholder="Category">
+                <input type="text" id="accountSubcategory" placeholder="Subcategory">
+            </div>
+            <div class="form-group">
+                <input type="number" id="initialBalance" placeholder="Initial Balance">
+                <input type="number" id="debit" placeholder="Debit">
+                <input type="number" id="credit" placeholder="Credit">
+            </div>
+            <div class="form-group">
+                <input type="number" id="balance" placeholder="Balance" disabled>
+                <input type="text" id="dateAdded" placeholder="Date Added" disabled>
+            </div>
+            <button type="button" onclick="saveChanges()">Save Changes</button>
+        </form>
+
+        <div class="button-container">
+            <button class="btn btn-back">Back</button>
+            <button class="btn btn-main-menu">Main Menu</button>
+        </div>
+    </div>
+
+    <script>
+        // Load selected account data from localStorage
+        document.addEventListener("DOMContentLoaded", function() {
+            const selectedAccountData = JSON.parse(localStorage.getItem("selectedAccountData"));
+            if (selectedAccountData) {
+                document.getElementById("accountName").value = selectedAccountData.accountName;
+                document.getElementById("accountNumber").value = selectedAccountData.accountNumber;
+                document.getElementById("accountCategory").value = selectedAccountData.accountCategory;
+                document.getElementById("accountSubcategory").value = selectedAccountData.accountSubcategory;
+                document.getElementById("initialBalance").value = selectedAccountData.initialBalance;
+                document.getElementById("debit").value = selectedAccountData.debit;
+                document.getElementById("credit").value = selectedAccountData.credit;
+                document.getElementById("balance").value = selectedAccountData.balance;
+                document.getElementById("dateAdded").value = selectedAccountData.dateAdded;
+            }
+        });
+
+        // Save the changes to the account
+        function saveChanges() {
+            const selectedAccountData = JSON.parse(localStorage.getItem("selectedAccountData"));
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const accounts = accountDatabase ? accountDatabase.accounts : [];
+
+            // Get new values from the form
+            selectedAccountData.accountName = document.getElementById("accountName").value;
+            selectedAccountData.accountCategory = document.getElementById("accountCategory").value;
+            selectedAccountData.accountSubcategory = document.getElementById("accountSubcategory").value;
+            selectedAccountData.initialBalance = parseFloat(document.getElementById("initialBalance").value);
+            selectedAccountData.debit = parseFloat(document.getElementById("debit").value);
+            selectedAccountData.credit = parseFloat(document.getElementById("credit").value);
+            selectedAccountData.balance = selectedAccountData.initialBalance + selectedAccountData.debit - selectedAccountData.credit;
+
+            // Update account in the database
+            const accountIndex = accounts.findIndex(account => account.accountNumber === selectedAccountData.accountNumber);
+            if (accountIndex !== -1) {
+                accounts[accountIndex] = selectedAccountData;
+            }
+
+            localStorage.setItem("accountDatabase", JSON.stringify({ accounts }));
+
+            alert("Account updated successfully!");
+            window.location.href = "store.html"; // Redirect back to the account list
+        }
+    </script>
+</body>
+</html>

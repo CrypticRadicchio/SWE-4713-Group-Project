@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+
+        /* Header Styling */
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin: 0;
+        }
+
+        /* Header Right Section */
+        .header-right {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .header-right button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .header-right button:hover {
+            background-color: #e03e3e;
+            transform: scale(1.05);
+        }
+
+        /* Admin Info (for user) */
+        .admin-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .admin-info img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* User Info Styling */
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* Add space between the user info and logout button */
+        }
+
+        .user-info img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-info span {
+            font-size: 18px;
+            color: white;
+        }
+
+        /* Message Section */
+        .message {
+            text-align: center;
+            font-size: 18px;
+            color: #28a745;
+            margin: 20px 0;
+        }
+
+        /* Button Grid Container */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Button Styling */
+        .submit-btn, .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .submit-btn:hover, .button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="admin-info">
+            <img src="Logo.png" alt="Logo">
+            <h1>Fast Finances</h1>
+        </div>
+        <div class="header-right">
+            <!-- User info section to display username and profile picture -->
+            <div class="user-info">
+                <img src="Admin.png" alt="Profile Picture">
+                <span id="username">Loading...</span> <!-- This will be replaced with the username dynamically -->
+            </div>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="message">Successful Login</div>
+
+    <div class="container">
+        <button class="submit-btn" onclick="window.location.href='Admin_Add_Account.html'">Create User</button>
+        <button class="submit-btn" onclick="window.location.href='Admin-Employee-Roster-View.html'">User Roster</button>
+        <button class="submit-btn" onclick="window.location.href='Admin-Email-Prompt.html'">Email</button>
+        <button class="submit-btn" onclick="window.location.href='Admin-Pending-Roster-View.html'">Pending Roster</button>
+
+        <button class="button" onclick="window.location.href='Admin_Accountants_Roster.html'">Account View & Edit</button>
+        <button class="button" onclick="reportFiling()">Feature 3</button>
+        <button class="button" onclick="emailDirectory()">Feature 4</button>
+        <button class="button" onclick="employeeDirectory()">Feature 5</button>
+    </div>
+
+    <script>
+        function logout() {
+            window.location.href = 'Login.html';
+        }
+
+        function notificationCenter() {
+            // Add functionality here
+        }
+
+        function reportFiling() {
+            // Add functionality here
+        }
+
+        function emailDirectory() {
+            // Add functionality here
+        }
+
+        function employeeDirectory() {
+            // Add functionality here
+        }
+
+        // Function to fetch the username of the most recent user from store.json
+        async function fetchUsername() {
+            try {
+                const response = await fetch('store.json');  // Fetch the JSON file
+                const data = await response.json();
+                const latestUser = data[data.length - 1]; // Assuming the latest user is the last entry
+                document.getElementById('username').textContent = latestUser.username; // Assuming 'username' is the field in the JSON
+            } catch (error) {
+                console.error('Error fetching the username:', error);
+            }
+        }
+
+        // Call the function to fetch the username when the page loads
+        window.onload = fetchUsername;
+    </script>
+</body>
+</html>

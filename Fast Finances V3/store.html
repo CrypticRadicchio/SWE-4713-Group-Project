@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users and Accounts</title>
+    <script>
+        // User Database Initialization
+        function initializeUserDatabase() {
+            if (!localStorage.getItem("userDatabase")) {
+                const users = {
+                    users: [
+                        { id: "admin", password: "admin123", role: "admin" },
+                        { id: "manager", password: "manager123", role: "manager" },
+                        { id: "employee", password: "employee123", role: "employee" }
+                    ]
+                };
+                localStorage.setItem("userDatabase", JSON.stringify(users));
+            }
+        }
+
+        // Account Database Initialization
+        function initializeAccountDatabase() {
+            if (!localStorage.getItem("accountDatabase")) {
+                const accountDatabase = {
+                    accounts: []
+                };
+                localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
+            }
+        }
+
+        // Add User Function
+        function addUser(event) {
+            event.preventDefault();
+
+            const id = document.querySelector('input[name="username"]').value.trim();
+            const password = document.querySelector('input[name="password"]').value;
+            const role = document.querySelector('select[name="role"]').value;
+
+            if (!id || !password) {
+                alert("Username and password are required!");
+                return;
+            }
+
+            const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+            if (userDatabase.users.some(user => user.id === id)) {
+                alert("Username already exists!");
+                return;
+            }
+
+            userDatabase.users.push({ id, password, role });
+            localStorage.setItem("userDatabase", JSON.stringify(userDatabase));
+
+            alert("User added successfully!");
+            document.getElementById("userForm").reset();
+            loadUsers(); // Refresh user list after adding a user
+        }
+
+        // Load Users
+        function loadUsers() {
+            const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+            const userList = document.getElementById("userList");
+
+            // Clear existing list
+            userList.innerHTML = '';
+
+            // Populate the table with users
+            userDatabase.users.forEach(user => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.password}</td>
+                    <td>${user.role}</td>
+                `;
+                userList.appendChild(row);
+            });
+        }
+
+        // Add Account Function
+        function addAccount(event) {
+            event.preventDefault();
+
+            const accountName = document.querySelector('input[name="accountName"]').value.trim();
+            const accountNumber = document.querySelector('input[name="accountNumber"]').value.trim();
+            const accountDescription = document.querySelector('input[name="accountDescription"]').value.trim();
+            const normalSide = document.querySelector('select[name="normalSide"]').value;
+            const accountCategory = document.querySelector('input[name="accountCategory"]').value.trim();
+            const accountSubcategory = document.querySelector('input[name="accountSubcategory"]').value.trim();
+            const initialBalance = parseFloat(document.querySelector('input[name="initialBalance"]').value.trim());
+            const debit = parseFloat(document.querySelector('input[name="debit"]').value.trim());
+            const credit = parseFloat(document.querySelector('input[name="credit"]').value.trim());
+            const userId = document.querySelector('input[name="userId"]').value.trim();
+            const order = document.querySelector('input[name="order"]').value.trim();
+            const statement = document.querySelector('input[name="statement"]').value.trim();
+            const comment = document.querySelector('input[name="comment"]').value.trim();
+
+            if (!accountName || !accountNumber || !accountDescription || !accountCategory || !accountSubcategory) {
+                alert("Please fill in all required fields!");
+                return;
+            }
+
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const newAccount = {
+                accountName,
+                accountNumber,
+                accountDescription,
+                normalSide,
+                accountCategory,
+                accountSubcategory,
+                initialBalance,
+                debit,
+                credit,
+                balance: initialBalance + debit - credit, // Calculate balance
+                dateAdded: new Date().toISOString(),
+                userId,
+                order,
+                statement,
+                comment
+            };
+
+            accountDatabase.accounts.push(newAccount);
+            localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
+
+            alert("Account added successfully!");
+            document.getElementById("accountForm").reset();
+            loadAccounts(); // Refresh account list after adding a new account
+        }
+
+        // Load Accounts
+        function loadAccounts() {
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const accountList = document.getElementById("accountList");
+
+            // Clear existing list
+            accountList.innerHTML = '';
+
+            // Populate the table with accounts
+            accountDatabase.accounts.forEach(account => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${account.accountName}</td>
+                    <td>${account.accountNumber}</td>
+                    <td>${account.accountDescription}</td>
+                    <td>${account.normalSide}</td>
+                    <td>${account.accountCategory}</td>
+                    <td>${account.accountSubcategory}</td>
+                    <td>${account.initialBalance}</td>
+                    <td>${account.debit}</td>
+                    <td>${account.credit}</td>
+                    <td>${account.balance}</td>
+                    <td>${account.dateAdded}</td>
+                    <td>${account.userId}</td>
+                    <td>${account.order}</td>
+                    <td>${account.statement}</td>
+                    <td>${account.comment}</td>
+                `;
+                accountList.appendChild(row);
+            });
+        }
+
+        // Clear Database Function
+        function clearDatabase() {
+            if (confirm("Are you sure you want to clear the database? This action cannot be undone.")) {
+                // Clear user database and account database
+                localStorage.removeItem("userDatabase");
+                localStorage.removeItem("accountDatabase");
+
+                // Re-initialize the databases
+                initializeUserDatabase();
+                initializeAccountDatabase();
+
+                alert("Database has been cleared and reset!");
+                loadUsers(); // Reload users after clearing
+                loadAccounts(); // Reload accounts after clearing
+            }
+        }
+
+        initializeUserDatabase();
+        initializeAccountDatabase();
+        window.onload = function() {
+            loadUsers(); // Load users when the page is loaded
+            loadAccounts(); // Load accounts when the page is loaded
+        };
+    </script>
+</head>
+<body>
+    <h2>Manage Users</h2>
+    <form id="userForm" onsubmit="addUser(event)">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <select name="role" required>
+            <option value="employee">Employee</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button type="submit">Add User</button>
+    </form>
+
+    <h3>Existing Users</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody id="userList">
+            <!-- User rows will be added here -->
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>Manage Accounts</h2>
+    <form id="accountForm" onsubmit="addAccount(event)">
+        <input type="text" name="accountName" placeholder="Account Name" required>
+        <input type="text" name="accountNumber" placeholder="Account Number" required>
+        <input type="text" name="accountDescription" placeholder="Account Description" required>
+        
+        <select name="normalSide" required>
+            <option value="Debit">Debit</option>
+            <option value="Credit">Credit</option>
+        </select>
+        
+        <input type="text" name="accountCategory" placeholder="Account Category" required>
+        <input type="text" name="accountSubcategory" placeholder="Account Subcategory" required>
+        
+        <input type="number" name="initialBalance" placeholder="Initial Balance" required>
+        <input type="number" name="debit" placeholder="Debit" required>
+        <input type="number" name="credit" placeholder="Credit" required>
+        
+        <input type="text" name="userId" placeholder="User ID" required>
+        <input type="text" name="order" placeholder="Order" required>
+        <input type="text" name="statement" placeholder="Statement (IS, BS, RE)" required>
+        <input type="text" name="comment" placeholder="Comment">
+
+        <button type="submit">Add Account</button>
+    </form>
+
+    <h3>Existing Accounts</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Account Name</th>
+                <th>Account Number</th>
+                <th>Description</th>
+                <th>Normal Side</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Initial Balance</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Balance</th>
+                <th>Date Added</th>
+                <th>User ID</th>
+                <th>Order</th>
+                <th>Statement</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody id="accountList">
+            <!-- Account rows will be added here -->
+        </tbody>
+    </table>
+
+    <hr>
+    <button onclick="clearDatabase()">Clear Database</button>
+</body>
+</html>
