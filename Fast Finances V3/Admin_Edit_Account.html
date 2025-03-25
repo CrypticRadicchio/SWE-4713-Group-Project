@@ -1,0 +1,81 @@
+<!-- Edit User Page (Admin_edit_account.html) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User Account</title>
+</head>
+<body>
+
+    <h2>Edit User Account</h2>
+
+    <!-- Form to edit user -->
+    <form id="edit-user-form">
+        <label for="first-name">First Name:</label>
+        <input type="text" id="first-name" name="first-name"><br><br>
+
+        <label for="last-name">Last Name:</label>
+        <input type="text" id="last-name" name="last-name"><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email"><br><br>
+
+        <label for="role">Role:</label>
+        <select id="role" name="role">
+            <option value="employee">Employee</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+        </select><br><br>
+
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+        </select><br><br>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <script>
+        // Retrieve the selected user from localStorage
+        const selectedUser = JSON.parse(localStorage.getItem('selectedUser'));
+
+        // If a user is selected, populate the form fields with their data
+        if (selectedUser) {
+            document.getElementById('first-name').value = selectedUser.first_name;
+            document.getElementById('last-name').value = selectedUser.last_name;
+            document.getElementById('email').value = selectedUser.email;
+            document.getElementById('role').value = selectedUser.role;
+            document.getElementById('status').value = selectedUser.status;
+        }
+
+        // Handle form submission for updating user information
+        document.getElementById('edit-user-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const updatedUser = {
+                id: selectedUser.id, // Retain the user ID
+                first_name: document.getElementById('first-name').value,
+                last_name: document.getElementById('last-name').value,
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value,
+                status: document.getElementById('status').value
+            };
+
+            // Update the user in the database (localStorage)
+            let usersDatabase = JSON.parse(localStorage.getItem('userDatabase'));
+            const userIndex = usersDatabase.users.findIndex(u => u.id === selectedUser.id);
+            if (userIndex !== -1) {
+                usersDatabase.users[userIndex] = updatedUser;
+                localStorage.setItem('userDatabase', JSON.stringify(usersDatabase));
+
+                alert('User details updated successfully!');
+                window.location.href = 'Admin-Dashboard.html'; // Redirect back to the dashboard
+            }
+        });
+    </script>
+
+</body>
+</html>

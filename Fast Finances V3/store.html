@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users and Accounts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        input, select, button {
+            padding: 8px;
+            margin: 5px 5px 5px 0;
+        }
+        button {
+            cursor: pointer;
+        }
+        .history-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+        .history-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #eee;
+        }
+        .action-buttons button {
+            margin: 2px;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+    </style>
+    <script>
+        // Initialize databases with edit history support
+        function initializeUserDatabase() {
+            if (!localStorage.getItem("userDatabase")) {
+                const users = {
+                    users: [
+                        { 
+                            id: "admin", 
+                            password: "admin123", 
+                            role: "admin",
+                            lastLogin: new Date().toISOString()
+                        }
+                    ]
+                };
+                localStorage.setItem("userDatabase", JSON.stringify(users));
+            }
+        }
+
+        function initializeAccountDatabase() {
+            if (!localStorage.getItem("accountDatabase")) {
+                const accountDatabase = {
+                    accounts: [],
+                    editHistory: [] // Global edit history
+                };
+                localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
+            }
+        }
+
+        // Enhanced addUser with history tracking
+        function addUser(event) {
+            event.preventDefault();
+
+            const id = document.querySelector('input[name="username"]').value.trim();
+            const password = document.querySelector('input[name="password"]').value;
+            const role = document.querySelector('select[name="role"]').value;
+
+            if (!id || !password) {
+                alert("Username and password are required!");
+                return;
+            }
+
+            const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+            if (userDatabase.users.some(user => user.id === id)) {
+                alert("Username already exists!");
+                return;
+            }
+
+            const newUser = { 
+                id, 
+                password, 
+                role,
+                dateCreated: new Date().toISOString(),
+                lastLogin: null
+            };
+
+            userDatabase.users.push(newUser);
+            localStorage.setItem("userDatabase", JSON.stringify(userDatabase));
+
+            // Track user creation in history
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            accountDatabase.editHistory.push({
+                type: "user_creation",
+                timestamp: new Date().toISOString(),
+                userId: id,
+                details: `User ${id} with role ${role} was created`
+            });
+            localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
+
+            alert("User added successfully!");
+            document.getElementById("userForm").reset();
+            loadUsers();
+        }
+
+        // Enhanced addAccount with history tracking
+        function addAccount(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const accountData = {};
+            formData.forEach((value, key) => {
+                accountData[key] = value.trim();
+            });
+
+            // Required fields validation
+            const requiredFields = ['accountName', 'accountNumber', 'accountDescription', 
+                                  'accountCategory', 'accountSubcategory', 'initialBalance'];
+            for (const field of requiredFields) {
+                if (!accountData[field]) {
+                    alert(`Please fill in the ${field} field!`);
+                    return;
+                }
+            }
+
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            
+            // Check for duplicate account number
+            if (accountDatabase.accounts.some(acc => acc.accountNumber === accountData.accountNumber)) {
+                alert("Account number already exists!");
+                return;
+            }
+
+            // Calculate balance
+            const balance = parseFloat(accountData.initialBalance) + 
+                          (parseFloat(accountData.debit) || 0) - 
+                          (parseFloat(accountData.credit) || 0);
+
+            const newAccount = {
+                ...accountData,
+                balance: balance,
+                dateAdded: new Date().toISOString(),
+                lastUpdated: new Date().toISOString(),
+                status: "Active",
+                editHistory: [], // Initialize account-specific edit history
+                ledgerEntries: [] // Initialize ledger entries
+            };
+
+            accountDatabase.accounts.push(newAccount);
+            
+            // Add to global edit history
+            accountDatabase.editHistory.push({
+                type: "account_creation",
+                timestamp: new Date().toISOString(),
+                accountNumber: accountData.accountNumber,
+                details: `Account ${accountData.accountName} (${accountData.accountNumber}) was created`
+            });
+
+            localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
+
+            alert("Account added successfully!");
+            event.target.reset();
+            loadAccounts();
+        }
+
+        // Load users with additional details
+        function loadUsers() {
+            const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+            const userList = document.getElementById("userList");
+
+            userList.innerHTML = userDatabase.users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.password}</td>
+                    <td>${user.role}</td>
+                    <td>${user.dateCreated ? new Date(user.dateCreated).toLocaleString() : 'N/A'}</td>
+                    <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Load accounts with action buttons
+        function loadAccounts() {
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const accountList = document.getElementById("accountList");
+
+            accountList.innerHTML = accountDatabase.accounts.map(account => `
+                <tr>
+                    <td>${account.accountName}</td>
+                    <td>${account.accountNumber}</td>
+                    <td>${account.accountDescription}</td>
+                    <td>${account.normalSide}</td>
+                    <td>$${parseFloat(account.balance).toFixed(2)}</td>
+                    <td>${account.status || 'Active'}</td>
+                    <td>${new Date(account.dateAdded).toLocaleDateString()}</td>
+                    <td class="action-buttons">
+                        <button onclick="viewAccountHistory('${account.accountNumber}')">History</button>
+                        <button onclick="editAccount('${account.accountNumber}')">Edit</button>
+                        <button onclick="viewAccountLedger('${account.accountNumber}')">Ledger</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // View account ledger
+        function viewAccountLedger(accountNumber) {
+            // Store the selected account in localStorage
+            localStorage.setItem('currentLedgerAccount', JSON.stringify({
+                accountNumber: accountNumber
+            }));
+            
+            // Navigate to the ledger page
+            window.location.href = 'Account_Ledger.html';
+        }
+
+        // View account edit history
+        function viewAccountHistory(accountNumber) {
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const account = accountDatabase.accounts.find(acc => acc.accountNumber === accountNumber);
+            const historyContainer = document.getElementById("historyContainer");
+            
+            if (!account) {
+                historyContainer.innerHTML = "<p>Account not found</p>";
+                return;
+            }
+
+            let historyHTML = `<h3>Edit History for Account ${account.accountNumber}</h3>`;
+            
+            if (account.editHistory && account.editHistory.length > 0) {
+                historyHTML += account.editHistory.map(entry => `
+                    <div class="history-item">
+                        <p><strong>${new Date(entry.timestamp).toLocaleString()}</strong></p>
+                        <p>${entry.editedBy ? `Edited by: ${entry.editedBy}` : ''}</p>
+                        <p>${entry.changes ? 'Changes: ' + JSON.stringify(entry.changes) : entry.details}</p>
+                    </div>
+                `).join('');
+            } else {
+                historyHTML += "<p>No edit history available for this account.</p>";
+            }
+
+            // Add global history related to this account
+            const relatedGlobalHistory = accountDatabase.editHistory.filter(
+                entry => entry.accountNumber === accountNumber
+            );
+            
+            if (relatedGlobalHistory.length > 0) {
+                historyHTML += `<h4>System Events</h4>`;
+                historyHTML += relatedGlobalHistory.map(entry => `
+                    <div class="history-item">
+                        <p><strong>${new Date(entry.timestamp).toLocaleString()}</strong></p>
+                        <p>${entry.details}</p>
+                    </div>
+                `).join('');
+            }
+
+            historyContainer.innerHTML = historyHTML;
+            document.getElementById("historyModal").style.display = "block";
+        }
+
+        // Edit account function
+        function editAccount(accountNumber) {
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const account = accountDatabase.accounts.find(acc => acc.accountNumber === accountNumber);
+            
+            if (account) {
+                localStorage.setItem("accountToEdit", JSON.stringify(account));
+                window.location.href = "edit-account.html";
+            } else {
+                alert("Account not found!");
+            }
+        }
+
+        // Clear database with confirmation
+        function clearDatabase() {
+            if (confirm("Are you sure you want to clear ALL data? This cannot be undone.")) {
+                localStorage.clear();
+                initializeUserDatabase();
+                initializeAccountDatabase();
+                alert("Database has been reset to default!");
+                loadUsers();
+                loadAccounts();
+            }
+        }
+
+        // Close history modal
+        function closeHistoryModal() {
+            document.getElementById("historyModal").style.display = "none";
+        }
+
+        // Initialize on page load
+        initializeUserDatabase();
+        initializeAccountDatabase();
+        window.onload = function() {
+            loadUsers();
+            loadAccounts();
+        };
+    </script>
+</head>
+<body>
+    <h1>Database Management Console</h1>
+    
+    <section>
+        <h2>User Management</h2>
+        <form id="userForm" onsubmit="addUser(event)">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <select name="role" required>
+                <option value="employee">Employee</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+            </select>
+            <button type="submit">Add User</button>
+        </form>
+
+        <h3>Current Users</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                    <th>Last Login</th>
+                </tr>
+            </thead>
+            <tbody id="userList"></tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Account Management</h2>
+        <form id="accountForm" onsubmit="addAccount(event)">
+            <div>
+                <input type="text" name="accountName" placeholder="Account Name" required>
+                <input type="text" name="accountNumber" placeholder="Account Number" required>
+                <input type="text" name="accountDescription" placeholder="Description" required>
+            </div>
+            <div>
+                <select name="normalSide" required>
+                    <option value="Debit">Debit</option>
+                    <option value="Credit">Credit</option>
+                </select>
+                <input type="text" name="accountCategory" placeholder="Category" required>
+                <input type="text" name="accountSubcategory" placeholder="Subcategory" required>
+            </div>
+            <div>
+                <input type="number" name="initialBalance" placeholder="Initial Balance" step="0.01" required>
+                <input type="number" name="debit" placeholder="Debit" step="0.01" value="0">
+                <input type="number" name="credit" placeholder="Credit" step="0.01" value="0">
+            </div>
+            <div>
+                <input type="text" name="userId" placeholder="User ID" required>
+                <input type="text" name="statement" placeholder="Statement (IS/BS/RE)" required>
+                <input type="text" name="comment" placeholder="Comments">
+            </div>
+            <button type="submit">Add Account</button>
+        </form>
+
+        <h3>Current Accounts</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Account Name</th>
+                    <th>Account Number</th>
+                    <th>Description</th>
+                    <th>Normal Side</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Date Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="accountList"></tbody>
+        </table>
+    </section>
+
+    <div>
+        <button onclick="clearDatabase()" style="background-color: #ff4444; color: white;">Reset Database</button>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow: auto;">
+        <div style="background: white; margin: 5% auto; padding: 20px; width: 80%; max-width: 800px; border-radius: 5px;">
+            <div id="historyContainer"></div>
+            <button onclick="closeHistoryModal()" style="margin-top: 20px;">Close</button>
+        </div>
+    </div>
+</body>
+</html>

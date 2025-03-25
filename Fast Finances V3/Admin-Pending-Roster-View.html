@@ -15,7 +15,7 @@
         /* Header Styling */
         header {
             background-color: #007bff;
-            color: #fff;
+            color: white;
             position: fixed;
             top: 0;
             width: 100%;
@@ -115,7 +115,7 @@
             color: white;
         }
 
-        .btn-remove {
+        .btn-deactivate {
             background-color: #dc3545;
             color: white;
         }
@@ -208,6 +208,18 @@
         .auth-btn, .back-btn {
             margin-top: 30px;
         }
+
+        /* Strikethrough for Denied Users */
+        .strikethrough {
+            text-decoration: line-through;
+            color: #dc3545; /* Red color for denied users */
+        }
+
+        #confirmationMessage {
+            color: green;
+            margin-top: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -217,8 +229,8 @@
         <img src="Logo.png" alt="Logo" class="logo">
         <h1 class="header-title">Fast Finances</h1>
         <div class="user-info">
-            <img src="user.png" alt="User Picture">
-            <div class="user-name">User Name</div>
+            <img src="Admin.png" alt="User Picture">
+            <div class="user-name" id="admin-username">Admin</div>
         </div>
     </header>
 
@@ -228,6 +240,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Select</th>
                     <th>Name</th>
                     <th>Role</th>
                     <th>Email</th>
@@ -242,13 +255,12 @@
 
         <!-- Action Buttons -->
         <div class="button-container">
-            <button class="btn btn-add" data-tooltip="Add a new user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Add User</button>
-            <button class="btn btn-modify" data-tooltip="Modify selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Modify User</button>
-            <button class="btn btn-remove" data-tooltip="Remove selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Remove User</button>
-            <button class="btn btn-allow" data-tooltip="Approve the selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Allow</button>
-            <button class="btn btn-deny" data-tooltip="Deny the selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Deny</button>
-            <button class="btn btn-suspend" data-tooltip="Suspend the selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)">Suspend</button>
+            <button class="btn btn-deactivate" data-tooltip="Deactivate selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)" onclick="processSelection('deactivate')">Deny User</button>
+            <button class="btn btn-allow" data-tooltip="Allow the selected user" onmouseover="showTooltip(event)" onmouseout="hideTooltip(event)" onclick="processSelection('allow')">Allow User</button>
         </div>
+
+        <!-- Confirmation Message -->
+        <div id="confirmationMessage"></div>
     </div>
 
     <!-- Tooltip -->
@@ -259,6 +271,16 @@
     <button class="back-btn" onclick="window.location.href='Admin-Dashboard.html'">Back</button>
 
     <script>
+        let usersDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+
+        // Display the last user's username in the header
+        function displayLastUser() {
+            const lastUser = usersDatabase.users[usersDatabase.users.length - 1]; // Get the last user added
+            if (lastUser) {
+                document.getElementById("admin-username").textContent = `${lastUser.first_name} ${lastUser.last_name}`; // Display their full name
+            }
+        }
+
         // Show Tooltip on Hover
         function showTooltip(event) {
             const tooltip = document.getElementById('tooltip');
@@ -274,58 +296,63 @@
             tooltip.style.display = 'none';
         }
 
-        // API URL to fetch employee data
-        const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
-
-        // Function to handle the API response and populate the table
+        // Populate Table
         function populateTable(data) {
             const tableBody = document.getElementById('employee-table-body');
-            tableBody.innerHTML = ''; // Clear existing table rows
+            tableBody.innerHTML = ''; // Clear existing rows
 
-            data.forEach(employee => {
-                const fullName = `${employee.first_name} ${employee.last_name}`;
-                const role = employee.role;
-                const email = employee.email;
-                const status = employee.status ? 'Active' : 'Inactive';
-
+            data.users.forEach(user => {
+                const fullName = `${user.first_name} ${user.last_name}`; // Display first and last name
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${fullName}</td>
-                    <td>${role}</td>
-                    <td>${email}</td>
-                    <td>${status}</td>
+                    <td><input type="checkbox" class="user-checkbox" data-id="${user.id}"></td>
+                    <td class="${user.status === false ? 'strikethrough' : ''}">${fullName}</td>
+                    <td>${user.role}</td>
+                    <td>${user.email}</td>
+                    <td>${user.status ? 'Active' : 'Inactive'}</td>
                     <td>
-                        <button class="btn btn-modify" onclick="modifyUser(${employee.id})">Modify</button>
-                        <button class="btn btn-remove" onclick="removeUser(${employee.id})">Remove</button>
+                        <button class="btn btn-modify" onclick="modifyUser(${user.id})">Modify</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
         }
 
-        // Function to fetch employee data from the API
-        async function getData(url) {
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
+        // Process selected users (Allow or Deactivate)
+        function processSelection(action) {
+            const selectedUsers = [];
+            document.querySelectorAll('.user-checkbox:checked').forEach(checkbox => {
+                const userId = checkbox.getAttribute('data-id');
+                const user = usersDatabase.users.find(u => u.id == userId);
+                if (user) {
+                    selectedUsers.push(user);
+                    if (action === 'deactivate') {
+                        user.status = false;
+                        // Cross out the user's name visually
+                        const row = checkbox.closest('tr');
+                        row.querySelector('td:nth-child(2)').classList.add('strikethrough');
+                    } else if (action === 'allow') {
+                        // Allow user: do nothing but show confirmation message
+                        document.getElementById('confirmationMessage').textContent = `User ${user.first_name} ${user.last_name} is allowed to continue.`;
                     }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+            });
 
-                const data = await response.json();
-                populateTable(data); // Populate table with the fetched data
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            // Update the users in the database after processing
+            localStorage.setItem("userDatabase", JSON.stringify(usersDatabase));
+            populateTable(usersDatabase);
         }
 
-        // Call the function to get data when the page loads
-        getData(apiUrl);
+        // Modify User (logic to modify user)
+        function modifyUser(userId) {
+            alert(`Modify user with ID: ${userId}`);
+        }
+
+        window.onload = () => {
+            displayLastUser(); // Show the last user in the header
+            populateTable(usersDatabase); // Populate the table with users
+        };
+
     </script>
 </body>
 </html>

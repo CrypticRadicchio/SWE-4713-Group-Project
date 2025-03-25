@@ -77,50 +77,50 @@
         }
     </style>
     <script>
-        const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
+        // Retrieve the users from localStorage
+        function getUsers() {
+            const usersData = localStorage.getItem("userDatabase"); // Use "userDatabase" as the key
+            if (usersData) {
+                return JSON.parse(usersData).users || [];
+            }
+            return [];
+        }
 
-        async function signIn() {
-            const username = document.querySelector('input[type="text"]').value;
-            const password = document.querySelector('input[type="password"]').value;
+        // Function to handle the sign-in
+        function signIn() {
+            const username = document.querySelector('input[type="text"]').value.trim();
+            const password = document.querySelector('input[type="password"]').value.trim();
             const errorMessage = document.getElementById('error-message');
 
             // Clear previous errors
             errorMessage.style.display = 'none';
 
-            try {
-                console.log(`Sending login request for user: ${username}`);
+            if (!username || !password) {
+                errorMessage.textContent = 'Please enter both username and password.';
+                errorMessage.style.display = 'block';
+                return;
+            }
 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: username, password: password }) // Sending raw password
-                });
+            // Retrieve stored users from localStorage
+            const users = getUsers();
+            console.log("Stored Users:", users); // Debugging: Log users in localStorage
 
-                console.log(`Response Status: ${response.status}`);
+            // Check if the user exists
+            const user = users.find(u => u.id === username && u.password === password);
+            console.log("Found User:", user); // Debugging: Log found user
 
-                if (!response.ok) {
-                    throw new Error('Invalid login credentials.');
-                }
-
-                const data = await response.json();
-
-                console.log('API Response:', data);
-
-                if (data && data.id === username && data.role) {
-                    console.log(`User authenticated as ${data.role}, redirecting...`);
-                    redirectToDashboard(data.role);
-                } else {
-                    throw new Error('Invalid username or password.');
-                }
-            } catch (error) {
-                console.error('Error:', error.message);
-                errorMessage.textContent = error.message;
+            if (user) {
+                console.log(`User authenticated as ${user.role}, redirecting...`);
+                // Store the current user in localStorage
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                redirectToDashboard(user.role);
+            } else {
+                errorMessage.textContent = 'Invalid username or password.';
                 errorMessage.style.display = 'block';
             }
         }
 
+        // Redirect to dashboard based on role
         function redirectToDashboard(role) {
             switch (role.toLowerCase()) {
                 case 'admin':
@@ -131,6 +131,9 @@
                     break;
                 case 'employee':
                     location.href = 'Employee-Dashboard.html';
+                    break;
+                case 'customer':
+                    location.href = 'store.html';  // Redirect to store if user is customer
                     break;
                 default:
                     alert('Unknown role: Access Denied');

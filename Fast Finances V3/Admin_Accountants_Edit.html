@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 0 20px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .logo {
+            height: 30px;
+            width: 30px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: normal;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover;
+        }
+        
+        .user-info span {
+            font-size: 14px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .btn-save { background-color: #28a745; }
+        .btn-cancel { background-color: #6c757d; }
+        
+        .edit-history {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img src="Admin.png" alt="Admin Profile">
+            <span id="username">Admin</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Edit Account</h2>
+        
+        <form id="accountForm">
+            <div class="form-group">
+                <label for="accountName">Account Name</label>
+                <input type="text" id="accountName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="accountNumber">Account Number</label>
+                <input type="text" id="accountNumber" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="accountCategory">Category</label>
+                <select id="accountCategory" required>
+                    <option value="Asset">Asset</option>
+                    <option value="Liability">Liability</option>
+                    <option value="Equity">Equity</option>
+                    <option value="Revenue">Revenue</option>
+                    <option value="Expense">Expense</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="accountSubcategory">Subcategory</label>
+                <input type="text" id="accountSubcategory">
+            </div>
+            
+            <div class="form-group">
+                <label for="initialBalance">Initial Balance ($)</label>
+                <input type="number" id="initialBalance" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="balance">Current Balance ($)</label>
+                <input type="number" id="balance" step="0.01" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn btn-save" onclick="saveAccount()">Save Changes</button>
+                <button type="button" class="btn btn-cancel" onclick="window.location.href='Admin_Accountants_Roster.html'">Cancel</button>
+            </div>
+        </form>
+        
+        <div class="edit-history" id="editHistory">
+            <h3>Edit History</h3>
+            <!-- History items will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Load account data when page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            const accountToEdit = JSON.parse(localStorage.getItem("accountToEdit"));
+            const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+            
+            if (accountToEdit) {
+                // Always get fresh data from main database
+                const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+                const freshAccount = accountDatabase.accounts.find(
+                    a => a.accountNumber === accountToEdit.accountNumber
+                );
+                
+                if (freshAccount) {
+                    // Populate form with current data
+                    document.getElementById("accountName").value = freshAccount.accountName;
+                    document.getElementById("accountNumber").value = freshAccount.accountNumber;
+                    document.getElementById("accountCategory").value = freshAccount.accountCategory;
+                    document.getElementById("accountSubcategory").value = freshAccount.accountSubcategory || '';
+                    document.getElementById("initialBalance").value = freshAccount.initialBalance;
+                    document.getElementById("balance").value = freshAccount.balance;
+                    document.getElementById("status").value = freshAccount.status || 'Active';
+                    
+                    // Store the fresh account data
+                    localStorage.setItem("accountToEdit", JSON.stringify(freshAccount));
+                    loadEditHistory(freshAccount.accountNumber);
+                } else {
+                    alert("Account not found in database!");
+                    window.location.href = "Admin_Accountants_Roster.html";
+                }
+            } else {
+                alert("No account selected for editing");
+                window.location.href = "Admin_Accountants_Roster.html";
+            }
+            
+            // Display current user
+            if (userDatabase?.users?.length > 0) {
+                document.getElementById('username').textContent = 
+                    userDatabase.users[userDatabase.users.length - 1].id;
+            }
+        });
+        
+        function saveAccount() {
+            // Validate initial balance
+            if (isNaN(parseFloat(document.getElementById("initialBalance").value))) {
+                alert("Please enter a valid initial balance");
+                return;
+            }
+
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+            const originalAccount = JSON.parse(localStorage.getItem("accountToEdit"));
+            
+            if (!accountDatabase || !userDatabase || !originalAccount) {
+                alert("Error: Unable to save changes");
+                return;
+            }
+            
+            // Find the account in the database
+            const accountIndex = accountDatabase.accounts.findIndex(
+                a => a.accountNumber === originalAccount.accountNumber
+            );
+            
+            if (accountIndex === -1) {
+                alert("Error: Account not found in database");
+                return;
+            }
+            
+            // Get current user
+            const currentUser = userDatabase.users[userDatabase.users.length - 1];
+            
+            // Create updated account object
+            const updatedAccount = {
+                ...accountDatabase.accounts[accountIndex], // Start with current database values
+                accountName: document.getElementById("accountName").value,
+                accountCategory: document.getElementById("accountCategory").value,
+                accountSubcategory: document.getElementById("accountSubcategory").value,
+                initialBalance: parseFloat(document.getElementById("initialBalance").value),
+                status: document.getElementById("status").value,
+                lastUpdated: new Date().toISOString(),
+                // Preserve the existing balance unless explicitly changed
+                balance: document.getElementById("balance").value !== accountDatabase.accounts[accountIndex].balance 
+                       ? parseFloat(document.getElementById("balance").value)
+                       : accountDatabase.accounts[accountIndex].balance
+            };
+            
+            // Track changes by comparing with original values
+            const changes = {};
+            Object.keys(updatedAccount).forEach(key => {
+                if (JSON.stringify(updatedAccount[key]) !== JSON.stringify(originalAccount[key])) {
+                    changes[key] = {
+                        from: originalAccount[key],
+                        to: updatedAccount[key]
+                    };
+                }
+            });
+            
+            // Initialize editHistory if it doesn't exist
+            if (!updatedAccount.editHistory) {
+                updatedAccount.editHistory = [];
+            }
+            
+            // Add edit record
+            updatedAccount.editHistory.push({
+                timestamp: new Date().toISOString(),
+                editedBy: currentUser.id,
+                changes: changes,
+                previousState: { ...originalAccount } // Store complete previous state
+            });
+            
+            // Update the account in the database
+            accountDatabase.accounts[accountIndex] = updatedAccount;
+            
+            // Save back to localStorage
+            localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
+            // Update the stored accountToEdit with the new values
+            localStorage.setItem("accountToEdit", JSON.stringify(updatedAccount));
+            
+            alert("Account updated successfully!");
+            window.location.href = "Admin_Accountants_Roster.html";
+        }
+        
+        function loadEditHistory(accountNumber) {
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const account = accountDatabase.accounts.find(a => a.accountNumber === accountNumber);
+            const historyContainer = document.getElementById("editHistory");
+            
+            historyContainer.innerHTML = account?.editHistory?.length > 0
+                ? account.editHistory.map(edit => `
+                    <div class="history-item">
+                        <p><strong>${new Date(edit.timestamp).toLocaleString()}</strong></p>
+                        <p>Edited by: ${edit.editedBy}</p>
+                        ${Object.entries(edit.changes).map(([field, change]) => `
+                            <p>${field}: ${change.from} → ${change.to}</p>
+                        `).join('')}
+                    </div>
+                `).join('')
+                : "<p>No edit history available for this account.</p>";
+        }
+    </script>
+</body>
+</html>

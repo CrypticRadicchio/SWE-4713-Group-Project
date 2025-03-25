@@ -34,7 +34,14 @@
             margin: 0;
         }
 
-        .header button {
+        /* Header Right Section */
+        .header-right {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .header-right button {
             background-color: #ff4d4d;
             color: white;
             border: none;
@@ -45,9 +52,41 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .header button:hover {
+        .header-right button:hover {
             background-color: #e03e3e;
             transform: scale(1.05);
+        }
+
+        /* Admin Info (for user) */
+        .admin-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .admin-info img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* User Info Styling */
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: 20px; /* Add space between the user info and logout button */
+        }
+
+        .user-info img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-info span {
+            font-size: 18px;
+            color: white;
         }
 
         /* Message Section */
@@ -89,19 +128,6 @@
             background-color: #0056b3;
             transform: scale(1.05);
         }
-
-        /* Admin Info (for user) */
-        .admin-info {
-            display: flex;
-            align-items: center;
-        }
-
-        .admin-info img {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
@@ -110,7 +136,14 @@
             <img src="Logo.png" alt="Logo">
             <h1>Fast Finances</h1>
         </div>
-        <button onclick="logout()">Logout</button>
+        <div class="header-right">
+            <!-- User info section to display username and profile picture -->
+            <div class="user-info">
+                <img src="Admin.png" alt="Profile Picture">
+                <span id="username">Loading...</span> <!-- This will be replaced with the username dynamically -->
+            </div>
+            <button onclick="logout()">Logout</button>
+        </div>
     </div>
 
     <div class="message">Successful Login</div>
@@ -121,7 +154,7 @@
         <button class="submit-btn" onclick="window.location.href='Admin-Email-Prompt.html'">Email</button>
         <button class="submit-btn" onclick="window.location.href='Admin-Pending-Roster-View.html'">Pending Roster</button>
 
-        <button class="button" onclick="notificationCenter()">Feature 2</button>
+        <button class="button" onclick="window.location.href='Admin_Accountants_Roster.html'">Account View & Edit</button>
         <button class="button" onclick="reportFiling()">Feature 3</button>
         <button class="button" onclick="emailDirectory()">Feature 4</button>
         <button class="button" onclick="employeeDirectory()">Feature 5</button>
@@ -147,6 +180,59 @@
         function employeeDirectory() {
             // Add functionality here
         }
+
+        // Improved function to fetch the username from localStorage
+        function fetchUsername() {
+            try {
+                // Check if userDatabase exists in localStorage
+                if (localStorage.getItem("userDatabase")) {
+                    const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+                    
+                    // Get the most recently logged in user (you may need to track this)
+                    if (userDatabase.users && userDatabase.users.length > 0) {
+                        // Assuming the last user in the array is the most recent
+                        const latestUser = userDatabase.users[userDatabase.users.length - 1];
+                        document.getElementById('username').textContent = latestUser.id;
+                    } else {
+                        document.getElementById('username').textContent = 'No users found';
+                    }
+                } else {
+                    document.getElementById('username').textContent = 'Database not initialized';
+                }
+            } catch (error) {
+                console.error('Error fetching the username:', error);
+                document.getElementById('username').textContent = 'Error loading user';
+            }
+        }
+
+        // Alternative version that uses a JSON file if you prefer that approach
+        async function fetchUsernameFromJSON() {
+            try {
+                const response = await fetch('store.json');
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                if (!Array.isArray(data) || data.length === 0) throw new Error('Invalid or empty data format');
+
+                // Sort by last login timestamp (ensure your data has lastLogin field)
+                data.sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin));
+                
+                document.getElementById('username').textContent = data[0].username;
+            } catch (error) {
+                console.error('Error fetching the username:', error);
+                document.getElementById('username').textContent = 'Error loading user';
+                // Fall back to localStorage if JSON fails
+                fetchUsername();
+            }
+        }
+
+        // Call the appropriate function when the page loads
+        window.onload = function() {
+            // Use either one of these:
+            fetchUsername(); // Uses localStorage
+            // OR
+            // fetchUsernameFromJSON(); // Uses store.json file
+        };
     </script>
 </body>
 </html>

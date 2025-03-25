@@ -24,14 +24,41 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .header img {
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header img.logo {
             height: 50px;
-            margin-right: 15px;
+        }
+
+        .header img.profile-pic {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
         }
 
         .header h1 {
             font-size: 26px;
             margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-name {
+            font-size: 18px;
         }
 
         .header button {
@@ -89,28 +116,21 @@
             background-color: #0056b3;
             transform: scale(1.05);
         }
-
-        /* Admin Info (for user) */
-        .admin-info {
-            display: flex;
-            align-items: center;
-        }
-
-        .admin-info img {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="admin-info">
-            <img src="Logo.png" alt="Logo">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
             <h1>Fast Finances</h1>
         </div>
-        <button onclick="logout()">Logout</button>
+        <div class="header-right">
+            <div class="user-info">
+                <img src="management.png" alt="Profile Picture" class="profile-pic">
+                <span class="user-name" id="username">Loading...</span>
+            </div>
+            <button onclick="logout()">Logout</button>
+        </div>
     </div>
 
     <div class="message">Successful Login</div>
@@ -121,19 +141,92 @@
         <button class="submit-btn" onclick="window.location.href='Management-Email-Prompt.html'">Email</button>
         <button class="submit-btn" onclick="window.location.href='Management-Employee-Roster-View.html'">Pending Roster</button>
 
-        <button class="button" onclick="notificationCenter()">Feature 2</button>
+        <button class="submit-btn" onclick="window.location.href='Management_Accountant_Roster.html'">Accountant Accounts</button>
         <button class="button" onclick="reportFiling()">Feature 3</button>
         <button class="button" onclick="emailDirectory()">Feature 4</button>
         <button class="button" onclick="employeeDirectory()">Feature 5</button>
     </div>
 
     <script>
-        function logout() {
-            window.location.href = 'Login.html';
+        // Primary function to fetch username from store.json
+        async function fetchUsernameFromJSON() {
+            try {
+                const response = await fetch('store.json');
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                // Handle both array and object formats
+                const users = Array.isArray(data) ? data : (data.users || []);
+                if (users.length === 0) throw new Error('No user data found');
+                
+                // Sort by last login timestamp (newest first)
+                const sortedUsers = [...users].sort((a, b) => {
+                    const dateA = a.lastLogin ? new Date(a.lastLogin) : new Date(0);
+                    const dateB = b.lastLogin ? new Date(b.lastLogin) : new Date(0);
+                    return dateB - dateA;
+                });
+                
+                // Get most recent user
+                const recentUser = sortedUsers[0];
+                
+                // Determine display name (try multiple possible fields)
+                const displayName = recentUser.username || 
+                                  (recentUser.first_name ? `${recentUser.first_name} ${recentUser.last_name || ''}`.trim() : null) ||
+                                  recentUser.name ||
+                                  recentUser.email ||
+                                  getUsernameFromStorage(); // Fallback to storage if no name found
+                
+                document.getElementById('username').textContent = displayName;
+                return true;
+            } catch (error) {
+                console.error('Error fetching from store.json:', error);
+                return false;
+            }
         }
 
-        function notificationCenter() {
-            // Add functionality here for feature 2
+        function getUsernameFromStorage() {
+            try {
+                // 1. Check sessionStorage for current session
+                const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+                if (currentUser) {
+                    return currentUser.username || 
+                           (currentUser.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : null) ||
+                           currentUser.name ||
+                           currentUser.email ||
+                           "Manager";
+                }
+
+                // 2. Check localStorage user database
+                const usersData = JSON.parse(localStorage.getItem("userDatabase"));
+                if (usersData?.users?.length > 0) {
+                    const lastUser = usersData.users[usersData.users.length - 1];
+                    return lastUser.username || 
+                           (lastUser.first_name ? `${lastUser.first_name} ${lastUser.last_name || ''}`.trim() : null) ||
+                           lastUser.name ||
+                           lastUser.email ||
+                           "Manager";
+                }
+            } catch (error) {
+                console.error('Error getting username from storage:', error);
+            }
+            return "Manager";
+        }
+
+        async function displayUsername() {
+            // First try store.json
+            const jsonSuccess = await fetchUsernameFromJSON();
+            
+            // If that fails, fall back to storage
+            if (!jsonSuccess) {
+                const username = getUsernameFromStorage();
+                document.getElementById('username').textContent = username;
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
         }
 
         function reportFiling() {
@@ -147,6 +240,9 @@
         function employeeDirectory() {
             // Add functionality here for feature 5
         }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', displayUsername);
     </script>
 </body>
 </html>

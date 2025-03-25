@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account View</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 0 20px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .logo {
+            height: 30px;
+            width: 30px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: normal;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover;
+        }
+        
+        .user-info span {
+            font-size: 14px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .account-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .account-info h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .account-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .detail-item {
+            margin-bottom: 8px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        
+        .btn-back { background-color: #6c757d; }
+        .btn-main-menu { background-color: #007bff; }
+        
+        .read-only-message {
+            font-style: italic;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img src="Admin.png" alt="Admin Profile">
+            <span id="username">Admin</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Account Details</h2>
+        
+        <div class="account-info" id="accountInfo">
+            <!-- Account details will be populated here -->
+        </div>
+        
+        <div class="read-only-message">
+            This is a view-only page. To make changes, please return to the Account Roster.
+        </div>
+        
+        <div class="button-container">
+            <button class="btn btn-back" onclick="window.location.href='Admin_Accountants_Roster.html'">Back to Roster</button>
+            <button class="btn btn-main-menu" onclick="window.location.href='Admin-Dashboard.html'">Return to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const accountData = JSON.parse(localStorage.getItem('currentViewAccount'));
+            
+            if (accountData) {
+                const accountInfoDiv = document.getElementById('accountInfo');
+                accountInfoDiv.innerHTML = `
+                    <h3>${accountData.accountName}</h3>
+                    <div class="account-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Account Number:</span>
+                            <span>${accountData.accountNumber}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Category:</span>
+                            <span>${accountData.accountCategory}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Subcategory:</span>
+                            <span>${accountData.accountSubcategory}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Current Balance:</span>
+                            <span>$${accountData.balance}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Initial Balance:</span>
+                            <span>$${accountData.initialBalance}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status:</span>
+                            <span>${accountData.status || 'Active'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date Created:</span>
+                            <span>${accountData.dateCreated || 'Not specified'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Last Updated:</span>
+                            <span>${accountData.lastUpdated || 'Not specified'}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                alert('No account data found!');
+                window.location.href = 'Admin_Accountants_Roster.html';
+            }
+            
+            try {
+                const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+                if (userDatabase && userDatabase.users && userDatabase.users.length > 0) {
+                    const latestUser = userDatabase.users[userDatabase.users.length - 1];
+                    document.getElementById('username').textContent = latestUser.id;
+                }
+            } catch (error) {
+                console.error('Error fetching username:', error);
+            }
+        });
+    </script>
+</body>
+</html>
