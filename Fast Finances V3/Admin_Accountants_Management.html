@@ -11,9 +11,9 @@
             color: #333;
             margin: 0;
             padding: 0;
+            position: relative;
         }
 
-        /* Header Styles */
         .header {
             background-color: #007bff;
             color: white;
@@ -30,12 +30,12 @@
         }
 
         .header img.logo {
-            height: 30px; /* Reduced logo size */
+            height: 30px;
             margin-right: 10px;
         }
 
         .header h1 {
-            font-size: 20px; /* Reduced font size */
+            font-size: 20px;
             margin: 0;
             font-weight: normal;
         }
@@ -43,18 +43,19 @@
         .header-right {
             display: flex;
             align-items: center;
-            margin-left: auto;
+            gap: 20px;
         }
 
         .header-right button {
             background-color: #ff4d4d;
             color: white;
             border: none;
-            padding: 8px 15px; /* Slightly smaller button */
+            padding: 8px 15px;
             cursor: pointer;
             border-radius: 5px;
             font-size: 14px;
             transition: background-color 0.3s ease, transform 0.2s ease;
+            position: relative;
         }
 
         .header-right button:hover {
@@ -66,70 +67,72 @@
             display: flex;
             align-items: center;
             margin-left: 15px;
+            gap: 8px;
         }
 
         .user-info img {
-            width: 25px; /* Smaller profile picture */
+            width: 25px;
             height: 25px;
             border-radius: 50%;
-            margin-right: 8px;
         }
 
         .user-info span {
-            font-size: 14px; /* Smaller font size */
+            font-size: 14px;
             color: white;
         }
 
-        /* Main Content Styles */
         .container {
-            max-width: 900px;
+            max-width: 850px;
             margin: 20px auto;
             background-color: white;
             padding: 20px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
 
-        form input,
-        form select,
-        form button {
-            width: 100%;
+        .form-row {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .form-label {
+            width: 200px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .form-input {
+            flex: 1;
             padding: 10px;
-            margin: 10px 0;
             font-size: 1em;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
 
+        .form-select {
+            flex: 1;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: white;
+        }
+
         form button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
             background-color: #4CAF50;
             color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 1em;
             transition: background-color 0.3s;
         }
 
         form button:hover {
             background-color: #45a049;
-        }
-
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-
-        table th,
-        table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-
-        table th {
-            background-color: #f2f2f2;
-        }
-
-        table tr:hover {
-            background-color: #f9f9f9;
         }
 
         .button-container {
@@ -144,187 +147,453 @@
             text-decoration: none;
             border-radius: 5px;
             transition: background-color 0.3s;
+            margin: 0 5px;
+            position: relative;
+            display: inline-block;
         }
 
         .button-container a:hover {
             background-color: #555;
         }
 
-        .form-group {
+        .calendar-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            width: 220px;
+        }
+
+        .calendar-header {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .form-group input,
-        .form-group select {
-            width: calc(33.33% - 15px);
+        .calendar-title {
+            font-weight: bold;
+            font-size: 0.9em;
         }
 
-        .form-group input[type="text"],
-        .form-group input[type="number"] {
-            width: calc(50% - 15px);
+        .calendar-days, .calendar-dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+            font-size: 0.8em;
+        }
+
+        .calendar-day {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .calendar-date {
+            text-align: center;
+            padding: 3px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+
+        .calendar-date:hover {
+            background-color: #f0f0f0;
+        }
+
+        .current-date {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .spinner {
+            display: none;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #007bff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            display: none;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
         }
     </style>
-    <script>
-        // Initialize account database in localStorage if not present
-        function initializeAccountDatabase() {
-            if (!localStorage.getItem("accountDatabase")) {
-                const accountDatabase = {
-                    accounts: []
-                };
-                localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
-            }
-        }
-
-        // Generate a new account number (simple example)
-        function generateAccountNumber() {
-            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
-            const lastAccount = accountDatabase.accounts[accountDatabase.accounts.length - 1];
-            const nextNumber = lastAccount ? parseInt(lastAccount.accountNumber) + 1 : 1001; // Starts from 1001
-            return nextNumber.toString();
-        }
-
-        // Add account to the account database
-        function addAccount(event) {
-            event.preventDefault();
-
-            const accountName = document.querySelector('input[name="accountName"]').value.trim();
-            const accountDescription = document.querySelector('input[name="accountDescription"]').value.trim();
-            const normalSide = document.querySelector('select[name="normalSide"]').value;
-            const accountCategory = document.querySelector('input[name="accountCategory"]').value.trim();
-            const accountSubcategory = document.querySelector('input[name="accountSubcategory"]').value.trim();
-            const initialBalance = parseFloat(document.querySelector('input[name="initialBalance"]').value.trim());
-            const debit = parseFloat(document.querySelector('input[name="debit"]').value.trim());
-            const credit = parseFloat(document.querySelector('input[name="credit"]').value.trim());
-            const userId = document.querySelector('input[name="userId"]').value.trim();
-            const order = document.querySelector('input[name="order"]').value.trim();
-            const statement = document.querySelector('input[name="statement"]').value.trim();
-            const comment = document.querySelector('input[name="comment"]').value.trim();
-
-            if (!accountName || !accountDescription || !accountCategory || !accountSubcategory) {
-                alert("Please fill in all required fields!");
-                return;
-            }
-
-            const accountNumber = generateAccountNumber();
-            const balance = initialBalance + debit - credit; // Calculate balance
-            const dateAdded = new Date().toISOString();
-
-            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
-            const newAccount = {
-                accountName,
-                accountNumber,
-                accountDescription,
-                normalSide,
-                accountCategory,
-                accountSubcategory,
-                initialBalance,
-                debit,
-                credit,
-                balance,
-                dateAdded,
-                userId,
-                order,
-                statement,
-                comment
-            };
-
-            accountDatabase.accounts.push(newAccount);
-            localStorage.setItem("accountDatabase", JSON.stringify(accountDatabase));
-
-            alert("Account added successfully!");
-            document.getElementById("accountForm").reset();
-        }
-
-        // Function to fetch the username from localStorage
-        function fetchUsername() {
-            try {
-                // Check if userDatabase exists in localStorage
-                if (localStorage.getItem("userDatabase")) {
-                    const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
-                    
-                    // Get the most recently logged in user
-                    if (userDatabase.users && userDatabase.users.length > 0) {
-                        // Assuming the last user in the array is the most recent
-                        const latestUser = userDatabase.users[userDatabase.users.length - 1];
-                        document.getElementById('username').textContent = latestUser.id;
-                    } else {
-                        document.getElementById('username').textContent = 'No users found';
-                    }
-                } else {
-                    document.getElementById('username').textContent = 'Database not initialized';
-                }
-            } catch (error) {
-                console.error('Error fetching the username:', error);
-                document.getElementById('username').textContent = 'Error loading user';
-            }
-        }
-
-        function logout() {
-            window.location.href = 'Login.html';
-        }
-
-        // Initialize on page load
-        window.onload = function() {
-            initializeAccountDatabase();
-            fetchUsername();
-        };
-    </script>
 </head>
 <body>
 
-<!-- Updated Header with User Info -->
 <div class="header">
     <div class="admin-info">
         <img src="Logo.png" alt="Logo" class="logo">
         <h1>Account Management</h1>
     </div>
     <div class="header-right">
-        <!-- User info section to display username and profile picture -->
         <div class="user-info">
-            <img src="Admin.png" alt="Profile Picture">
+            <img src="Admin.png" alt="Profile Picture" id="user-pic">
             <span id="username">Loading...</span>
         </div>
-        <button onclick="logout()">Logout</button>
+        <button onclick="logout()" class="tooltip">
+            Logout
+            <span class="tooltiptext">Click to securely log out of the system</span>
+        </button>
     </div>
 </div>
 
 <div class="container">
     <form id="accountForm" onsubmit="addAccount(event)">
         <h3>Create New Account</h3>
-        <div class="form-group">
-            <input type="text" name="accountName" placeholder="Account Name" required>
-            <input type="text" name="accountDescription" placeholder="Account Description" required>
-            <select name="normalSide" required>
+        
+        <div id="statusMessage" class="status-message"></div>
+        
+        <div class="form-row">
+            <label class="form-label">Account Name:</label>
+            <input type="text" name="account_name" class="form-input" placeholder="e.g. Cash" required>
+        </div>
+        
+        <div class="form-row">
+            <label class="form-label">Description:</label>
+            <input type="text" name="description" class="form-input" placeholder="Account description">
+        </div>
+        
+        <div class="form-row">
+            <label class="form-label">Normal Side:</label>
+            <select name="normal_side" class="form-select" required>
+                <option value="">Select...</option>
                 <option value="Debit">Debit</option>
                 <option value="Credit">Credit</option>
             </select>
         </div>
-        <div class="form-group">
-            <input type="text" name="accountCategory" placeholder="Account Category (e.g. Asset)" required>
-            <input type="text" name="accountSubcategory" placeholder="Account Subcategory" required>
-            <input type="number" name="initialBalance" placeholder="Initial Balance" required>
+        
+        <div class="form-row">
+            <label class="form-label">Category:</label>
+            <input type="text" name="category" class="form-input" placeholder="e.g. Asset" required>
         </div>
-        <div class="form-group">
-            <input type="number" name="debit" placeholder="Debit" required>
-            <input type="number" name="credit" placeholder="Credit" required>
-            <input type="text" name="userId" placeholder="User ID" required>
+        
+        <div class="form-row">
+            <label class="form-label">Subcategory:</label>
+            <input type="text" name="sub_category" class="form-input" placeholder="e.g. Current Assets" required>
         </div>
-        <div class="form-group">
-            <input type="text" name="order" placeholder="Order (e.g. 01)" required>
-            <input type="text" name="statement" placeholder="Statement (e.g. IS, BS, RE)" required>
-            <input type="text" name="comment" placeholder="Comment">
+        
+        <div class="form-row">
+            <label class="form-label">Initial Balance:</label>
+            <input type="number" name="initial_balance" class="form-input" placeholder="0.00" step="0.01" value="0">
         </div>
-        <button type="submit">Add Account</button>
+        
+        <div class="form-row">
+            <label class="form-label">Debit:</label>
+            <input type="number" name="debit" class="form-input" placeholder="0.00" step="0.01" value="0">
+        </div>
+        
+        <div class="form-row">
+            <label class="form-label">Credit:</label>
+            <input type="number" name="credit" class="form-input" placeholder="0.00" step="0.01" value="0">
+        </div>
+        
+        <div class="form-row">
+            <label class="form-label">Statement:</label>
+            <select name="statement" class="form-select" required>
+                <option value="">Select...</option>
+                <option value="BS">Balance Sheet (BS)</option>
+                <option value="IS">Income Statement (IS)</option>
+                <option value="RE">Retained Earnings (RE)</option>
+            </select>
+        </div>
+        
+        <div class="form-row">
+            <label class="form-label">Comment:</label>
+            <input type="text" name="comment" class="form-input" placeholder="Optional notes">
+        </div>
+        
+        <div id="spinner" class="spinner"></div>
+        
+        <button type="submit" class="tooltip">
+            Add Account
+            <span class="tooltiptext">Submit this form to create a new account in the system</span>
+        </button>
     </form>
 
     <div class="button-container">
-        <a href="Admin-Dashboard.html">Return to Dashboard</a>
-        <a href="Admin_Accountants_Roster.html">Back</a>
-        <a href="Login.html"> Log Out</a>
+        <a href="Admin-Dashboard.html" class="tooltip">Return to Dashboard
+            <span class="tooltiptext">Go back to the main dashboard screen</span>
+        </a>
+        <a href="Admin_Accountants_Roster.html" class="tooltip">Back
+            <span class="tooltiptext">Return to the previous screen</span>
+        </a>
     </div>
 </div>
 
+<div class="calendar-container" id="calendar">
+    <div class="calendar-header">
+        <span class="calendar-title" id="calendar-month-year"></span>
+    </div>
+    <div class="calendar-days">
+        <div class="calendar-day">Sun</div>
+        <div class="calendar-day">Mon</div>
+        <div class="calendar-day">Tue</div>
+        <div class="calendar-day">Wed</div>
+        <div class="calendar-day">Thu</div>
+        <div class="calendar-day">Fri</div>
+        <div class="calendar-day">Sat</div>
+    </div>
+    <div class="calendar-dates" id="calendar-dates"></div>
+</div>
+
+<script>
+    // API Configuration
+    const API_BASE_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com';
+    
+    // Display the currently logged in user
+    function displayLoggedInUser() {
+        try {
+            // Get user from sessionStorage or localStorage
+            const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                             JSON.parse(localStorage.getItem("currentUser"));
+            
+            if (currentUser) {
+                // Determine display name
+                const displayName = currentUser.first_name 
+                    ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
+                    : currentUser.username || currentUser.id || "Administrator";
+                
+                document.getElementById('username').textContent = displayName;
+                
+                // Set profile picture if available
+                if (currentUser.profile_pic) {
+                    document.getElementById('user-pic').src = currentUser.profile_pic;
+                }
+                
+                return currentUser;
+            } else {
+                document.getElementById('username').textContent = "Administrator";
+                return null;
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            document.getElementById('username').textContent = "Administrator";
+            return null;
+        }
+    }
+    
+    // Add account to the API
+    async function addAccount(event) {
+        event.preventDefault();
+        
+        document.getElementById('spinner').style.display = 'block';
+        document.getElementById('statusMessage').style.display = 'none';
+        
+        const currentUser = displayLoggedInUser();
+        
+        if (!currentUser || (!currentUser.id && !currentUser.user_id)) {
+            const errorMsg = "Error: No user logged in or user ID missing";
+            console.error(errorMsg);
+            showStatus(errorMsg, false);
+            document.getElementById('spinner').style.display = 'none';
+            return;
+        }
+        
+        // Use user_id if available, otherwise fall back to id
+        const userId = currentUser.user_id || currentUser.id;
+        
+        // Prepare the account data
+        const formData = {
+            account_name: document.querySelector('input[name="account_name"]').value.trim(),
+            description: document.querySelector('input[name="description"]').value.trim() || null,
+            normal_side: document.querySelector('select[name="normal_side"]').value,
+            category: document.querySelector('input[name="category"]').value.trim(),
+            sub_category: document.querySelector('input[name="sub_category"]').value.trim(),
+            initial_balance: parseFloat(document.querySelector('input[name="initial_balance"]').value) || 0,
+            debit: parseFloat(document.querySelector('input[name="debit"]').value) || 0,
+            credit: parseFloat(document.querySelector('input[name="credit"]').value) || 0,
+            statement: document.querySelector('select[name="statement"]').value,
+            comment: document.querySelector('input[name="comment"]').value.trim() || "",
+            status: true
+        };
+
+        // Validate required fields
+        if (!formData.account_name || !formData.normal_side || !formData.category || 
+            !formData.sub_category || !formData.statement) {
+            const errorMsg = "Please fill in all required fields!";
+            console.error(errorMsg);
+            showStatus(errorMsg, false);
+            document.getElementById('spinner').style.display = 'none';
+            return;
+        }
+
+        try {
+            // Include user ID in the URL
+            const apiUrl = `${API_BASE_URL}/accounts?user_id=${userId}`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("API error response:", errorData);
+                throw new Error(errorData.message || 'Failed to create account');
+            }
+
+            const result = await response.json();
+            console.log("API success response:", result);
+            
+            showStatus("Account created successfully!", true);
+            document.getElementById("accountForm").reset();
+            
+        } catch (error) {
+            console.error('Error creating account:', error);
+            showStatus(`Error: ${error.message}`, false);
+        } finally {
+            document.getElementById('spinner').style.display = 'none';
+        }
+    }
+
+    // Show status message
+    function showStatus(message, isSuccess) {
+        const statusElement = document.getElementById('statusMessage');
+        statusElement.textContent = message;
+        statusElement.className = isSuccess ? 'status-message success' : 'status-message error';
+        statusElement.style.display = 'block';
+        
+        setTimeout(() => {
+            statusElement.style.display = 'none';
+        }, 5000);
+    }
+
+    function logout() {
+        // Clear user session
+        sessionStorage.removeItem("currentUser");
+        localStorage.removeItem("currentUser");
+        window.location.href = 'Login.html';
+    }
+
+    // Calendar functionality
+    function renderCalendar() {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const currentDate = now.getDate();
+        
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+                           "July", "August", "September", "October", "November", "December"];
+        document.getElementById('calendar-month-year').textContent = 
+            `${monthNames[currentMonth]} ${currentYear}`;
+        
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        
+        const datesContainer = document.getElementById('calendar-dates');
+        datesContainer.innerHTML = '';
+        
+        // Fill in empty cells for days before the first of the month
+        for (let i = 0; i < firstDay; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'calendar-date';
+            datesContainer.appendChild(emptyCell);
+        }
+        
+        // Create cells for each day of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateCell = document.createElement('div');
+            dateCell.className = 'calendar-date';
+            dateCell.textContent = day;
+            
+            if (day === currentDate) {
+                dateCell.classList.add('current-date');
+            }
+            
+            datesContainer.appendChild(dateCell);
+        }
+        
+        // Fill in remaining empty cells to complete the grid (if needed)
+        const totalCells = firstDay + daysInMonth;
+        const remainingCells = 7 - (totalCells % 7);
+        
+        if (remainingCells < 7) {
+            for (let i = 0; i < remainingCells; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-date';
+                datesContainer.appendChild(emptyCell);
+            }
+        }
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+        // Set default values
+        document.querySelector('input[name="initial_balance"]').value = '0.00';
+        document.querySelector('input[name="debit"]').value = '0.00';
+        document.querySelector('input[name="credit"]').value = '0.00';
+        
+        // Display user and render calendar
+        displayLoggedInUser();
+        renderCalendar();
+    };
+</script>
 </body>
 </html>

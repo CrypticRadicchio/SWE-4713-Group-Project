@@ -62,7 +62,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 20px auto;
             background: #fff;
             padding: 20px;
@@ -84,6 +84,8 @@
         
         th {
             background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
         }
         
         .btn {
@@ -137,6 +139,31 @@
             display: flex;
             gap: 5px;
         }
+
+        .status-active {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #007bff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -156,24 +183,41 @@
 
         <div class="filter-container">
             <select id="filter-category" class="filter-select">
-                <option value="accountName">Account Name</option>
-                <option value="accountNumber">Account Number</option>
-                <option value="accountCategory">Category</option>
-                <option value="accountSubcategory">Subcategory</option>
-                <option value="initialBalance">Initial Balance</option>
+                <option value="account_id">Account ID</option>
+                <option value="account_name">Account Name</option>
+                <option value="description">Description</option>
+                <option value="normal_side">Normal Side</option>
+                <option value="category">Category</option>
+                <option value="sub_category">Subcategory</option>
+                <option value="initial_balance">Initial Balance</option>
+                <option value="debit">Debit</option>
+                <option value="credit">Credit</option>
                 <option value="balance">Balance</option>
+                <option value="statement">Statement</option>
+                <option value="comment">Comment</option>
+                <option value="status">Status</option>
             </select>
             <input type="text" id="search" class="search-input" oninput="applySearchFilter()" placeholder="Search...">
         </div>
 
+        <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
+
         <table>
             <thead>
                 <tr>
+                    <th>Account ID</th>
                     <th>Account Name</th>
-                    <th>Account Number</th>
+                    <th>Description</th>
+                    <th>Normal Side</th>
                     <th>Category</th>
                     <th>Subcategory</th>
+                    <th>Initial Balance</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
                     <th>Balance</th>
+                    <th>Statement</th>
+                    <th>Comment</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -183,7 +227,7 @@
         </table>
 
         <div class="button-container">
-            <button class="btn btn-add" onclick="window.location.href='Admin_Accountants_Management.html'">Add Account</button>
+            <button class="btn btn-add" onclick="addAccount()">Add Account</button>
         </div>
 
         <div class="separate-buttons">
@@ -194,105 +238,186 @@
     </div>
 
     <script>
-        function displayLoggedInUser() {
+        // Global variable to store accounts data
+        let accountsData = [];
+
+        async function fetchAccounts() {
             try {
-                const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
-                if (userDatabase && userDatabase.users && userDatabase.users.length > 0) {
-                    const latestUser = userDatabase.users[userDatabase.users.length - 1];
-                    document.getElementById('username').textContent = latestUser.id;
+                document.getElementById('loading-spinner').style.display = 'block';
+                const response = await fetch('https://fast-finance-e250d1a7d65a.herokuapp.com/accounts');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
+                const data = await response.json();
+                accountsData = data;
+                populateAccountTable(data);
             } catch (error) {
-                console.error('Error fetching username:', error);
+                console.error('Error fetching accounts:', error);
+                alert('Failed to load accounts. Please try again later.');
+            } finally {
+                document.getElementById('loading-spinner').style.display = 'none';
             }
+        }
+
+        function populateAccountTable(accounts) {
+            const tableBody = document.getElementById("accountTableBody");
+            tableBody.innerHTML = "";
+
+            accounts.forEach(account => {
+                // Calculate current balance
+                const balance = (account.initial_balance || 0) + (account.debit || 0) - (account.credit || 0);
+                
+                // Format status display
+                const statusDisplay = account.status ? 'Active' : 'Inactive';
+                const statusClass = account.status ? 'status-active' : 'status-inactive';
+                
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${account.account_id || ''}</td>
+                    <td>${account.account_name || ''}</td>
+                    <td>${account.description || ''}</td>
+                    <td>${account.normal_side || ''}</td>
+                    <td>${account.category || ''}</td>
+                    <td>${account.sub_category || ''}</td>
+                    <td>${(account.initial_balance || 0).toFixed(2)}</td>
+                    <td>${(account.debit || 0).toFixed(2)}</td>
+                    <td>${(account.credit || 0).toFixed(2)}</td>
+                    <td>${balance.toFixed(2)}</td>
+                    <td>${account.statement || ''}</td>
+                    <td>${account.comment || ''}</td>
+                    <td class="${statusClass}">${statusDisplay}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-ledger" onclick="viewAccountLedger('${account.account_id}')">Ledger</button>
+                            <button class="btn btn-view" onclick="viewAccount('${account.account_id}')">View</button>
+                            <button class="btn btn-edit" onclick="editAccount('${account.account_id}')">Edit</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
         }
 
         function applySearchFilter() {
             const searchValue = document.getElementById("search").value.toLowerCase();
             const filterCategory = document.getElementById("filter-category").value;
             
-            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
-            const accounts = accountDatabase ? accountDatabase.accounts : [];
+            if (!searchValue) {
+                populateAccountTable(accountsData);
+                return;
+            }
             
-            let tableBody = document.getElementById("accountTableBody");
-            tableBody.innerHTML = "";
-
-            accounts.forEach(account => {
-                let filterValue = String(account[filterCategory]).toLowerCase();
-                
-                if ((filterCategory === 'initialBalance' || filterCategory === 'balance') && searchValue) {
-                    if (String(account[filterCategory]).includes(searchValue)) {
-                        addRowToTable(account);
-                    }
-                } 
-                else if (filterValue.includes(searchValue)) {
-                    addRowToTable(account);
+            const filteredAccounts = accountsData.filter(account => {
+                // Handle numeric fields
+                if (['initial_balance', 'debit', 'credit', 'balance'].includes(filterCategory)) {
+                    return String(account[filterCategory] || 0).includes(searchValue);
                 }
+                
+                // Handle status field
+                if (filterCategory === 'status') {
+                    const statusValue = account.status ? 'active' : 'inactive';
+                    return statusValue.includes(searchValue);
+                }
+                
+                // Handle all other text fields
+                return String(account[filterCategory] || '').toLowerCase().includes(searchValue);
             });
-        }
-
-        function addRowToTable(account) {
-            const tableBody = document.getElementById("accountTableBody");
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${account.accountName}</td>
-                <td>${account.accountNumber}</td>
-                <td>${account.accountCategory}</td>
-                <td>${account.accountSubcategory}</td>
-                <td>${account.balance}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn btn-ledger" onclick="viewAccountLedger('${account.accountNumber}')">Ledger</button>
-                        <button class="btn btn-view" onclick="viewAccount('${account.accountNumber}')">View</button>
-                        <button class="btn btn-edit" onclick="editAccount('${account.accountNumber}')">Edit</button>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        }
-
-        // Added viewAccountLedger function
-        function viewAccountLedger(accountNumber) {
-            localStorage.setItem('currentLedgerAccount', JSON.stringify({
-                accountNumber: accountNumber
-            }));
-            window.location.href = 'Admin-Current-Ledger-Account.html';
-        }
-
-        function viewAccount(accountNumber) {
-            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
-            const accounts = accountDatabase ? accountDatabase.accounts : [];
-            const accountToView = accounts.find(account => account.accountNumber === accountNumber);
             
-            if (accountToView) {
-                localStorage.setItem('currentViewAccount', JSON.stringify(accountToView));
+            populateAccountTable(filteredAccounts);
+        }
+
+        function viewAccountLedger(accountId) {
+            const account = accountsData.find(acc => acc.account_id == accountId);
+            if (account) {
+                localStorage.setItem('currentLedgerAccount', JSON.stringify(account));
+                window.location.href = 'Admin-Current-Ledger-Roster.html';
+            } else {
+                alert('Account not found!');
+            }
+        }
+
+        function viewAccount(accountId) {
+            const account = accountsData.find(acc => acc.account_id == accountId);
+            if (account) {
+                localStorage.setItem('currentViewAccount', JSON.stringify(account));
                 window.location.href = 'Admin-Accountant-View.html';
             } else {
                 alert('Account not found!');
             }
         }
 
-        function editAccount(accountNumber) {
-            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
-            const accounts = accountDatabase ? accountDatabase.accounts : [];
-            const accountToEdit = accounts.find(account => account.accountNumber === accountNumber);
-            
-            if (accountToEdit) {
-                localStorage.setItem("accountToEdit", JSON.stringify(accountToEdit));
+        function editAccount(accountId) {
+            const account = accountsData.find(acc => acc.account_id == accountId);
+            if (account) {
+                localStorage.setItem("accountToEdit", JSON.stringify(account));
                 window.location.href = "Admin_Accountants_Edit.html";
+            } else {
+                alert('Account not found!');
             }
         }
 
         function addAccount() {
-            window.location.href = 'add-account.html';
+            // Get current user from session or local storage
+            const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                              JSON.parse(localStorage.getItem("currentUser"));
+            
+            if (currentUser && (currentUser.id || currentUser.user_id)) {
+                // Store the user ID to pass to the next page
+                const userId = currentUser.id || currentUser.user_id;
+                localStorage.setItem("currentUserId", userId);
+                window.location.href = 'Admin_Accountants_Management.html';
+            } else {
+                alert('User session not found. Please log in again.');
+                logout();
+            }
+        }
+
+        function displayLoggedInUser() {
+            try {
+                // First try sessionStorage
+                const sessionUser = JSON.parse(sessionStorage.getItem("currentUser"));
+                if (sessionUser) {
+                    const displayName = sessionUser.first_name 
+                        ? `${sessionUser.first_name} ${sessionUser.last_name || ''}`.trim()
+                        : sessionUser.username || sessionUser.id || "Administrator";
+                    document.getElementById('username').textContent = displayName;
+                    
+                    if (sessionUser.profile_pic) {
+                        document.querySelector('.user-info img').src = sessionUser.profile_pic;
+                    }
+                    return;
+                }
+
+                // Then try localStorage
+                const localUser = JSON.parse(localStorage.getItem("currentUser"));
+                if (localUser) {
+                    const displayName = localUser.first_name 
+                        ? `${localUser.first_name} ${localUser.last_name || ''}`.trim()
+                        : localUser.username || localUser.id || "Administrator";
+                    document.getElementById('username').textContent = displayName;
+                    
+                    if (localUser.profile_pic) {
+                        document.querySelector('.user-info img').src = localUser.profile_pic;
+                    }
+                    return;
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                document.getElementById('username').textContent = "Administrator";
+            }
         }
 
         function logout() {
+            sessionStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUser");
             window.location.href = 'Login.html';
         }
 
         document.addEventListener("DOMContentLoaded", function() {
             displayLoggedInUser();
-            applySearchFilter();
+            fetchAccounts();
         });
     </script>
 </body>

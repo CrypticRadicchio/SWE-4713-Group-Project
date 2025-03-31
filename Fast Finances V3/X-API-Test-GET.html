@@ -3,34 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GET Request Example</title>
+    <title>User Information Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .user-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .user-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .info-group {
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .info-value {
+            color: #7f8c8d;
+        }
+        .status-active {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .status-inactive {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background-color: #fadbd8;
+            border-radius: 5px;
+        }
+        .refresh-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .refresh-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Users Data:</h1>
-    <pre id="api-response">Loading...</pre>
+    <div class="container">
+        <h1>User Management Dashboard</h1>
+        <button class="refresh-btn" onclick="fetchUsers()">Refresh Data</button>
+        <div id="loading" class="loading">Loading user data...</div>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <div id="user-container" class="user-card"></div>
+    </div>
 
     <script>
         const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
+        const userContainer = document.getElementById('user-container');
+        const loadingElement = document.getElementById('loading');
+        const errorElement = document.getElementById('error-message');
 
-        // Function to handle the API response
-        function displayData(data) {
-            document.getElementById('api-response').textContent = JSON.stringify(data, null, 2
-            );
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'Not set';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
         }
 
-        // Function to handle errors
+        // Format security answers
+        function formatSecurityAnswers(answers) {
+            if (!answers || answers.length === 0) return 'None set';
+            return answers.map((answer, index) => 
+                `${index + 1}. ${answer.question || 'Question'} - ${answer.answer || 'Answer'}`
+            ).join('<br>');
+        }
+
+        // Format past passwords
+        function formatPastPasswords(passwords) {
+            if (!passwords || passwords.length === 0) return 'None recorded';
+            return passwords.map((pass, index) => 
+                `${index + 1}. ${'•'.repeat(8)} (last used: ${formatDate(pass.date) || 'unknown'})`
+            ).join('<br>');
+        }
+
+        // Create user card HTML
+        function createUserCard(user) {
+            return `
+                <div class="user-info">
+                    <div class="info-group">
+                        <span class="info-label">User ID:</span>
+                        <span class="info-value">${user.user_id || 'N/A'}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value">${user.first_name || ''} ${user.last_name || ''}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">${user.email || 'N/A'}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Date of Birth:</span>
+                        <span class="info-value">${formatDate(user.dob)}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Role:</span>
+                        <span class="info-value" style="text-transform: capitalize;">${user.role || 'N/A'}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value ${user.status ? 'status-active' : 'status-inactive'}">
+                            ${user.status ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Failed Attempts:</span>
+                        <span class="info-value">${user.failed_attempts || 0}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Password Expires:</span>
+                        <span class="info-value">${formatDate(user.password_expiration)}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Suspension Period:</span>
+                        <span class="info-value">
+                            ${user.suspension_start_date ? formatDate(user.suspension_start_date) : 'Not suspended'} 
+                            ${user.suspension_end_date ? ' to ' + formatDate(user.suspension_end_date) : ''}
+                        </span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Security Answers:</span>
+                        <span class="info-value">${formatSecurityAnswers(user.security_answers)}</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Password History:</span>
+                        <span class="info-value">${formatPastPasswords(user.past_passwords)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Display users
+        function displayUsers(users) {
+            if (!users || users.length === 0) {
+                userContainer.innerHTML = '<p>No users found</p>';
+                return;
+            }
+
+            userContainer.innerHTML = users.map(user => createUserCard(user)).join('');
+        }
+
+        // Handle errors
         function handleError(error) {
-            document.getElementById('api-response').textContent = 'Error: ' + error;
+            loadingElement.style.display = 'none';
+            errorElement.textContent = `Error: ${error.message || 'Failed to fetch user data'}`;
+            errorElement.style.display = 'block';
             console.error('Error:', error);
         }
 
-        // Function to fetch data from the API
-        async function getData(url) {
+        // Fetch users from API
+        async function fetchUsers() {
             try {
-                const response = await fetch(url, {
+                loadingElement.style.display = 'block';
+                errorElement.style.display = 'none';
+                userContainer.innerHTML = '';
+
+                const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('authToken') // If using authentication
                     }
                 });
 
@@ -39,14 +218,15 @@
                 }
 
                 const data = await response.json();
-                displayData(data);
+                loadingElement.style.display = 'none';
+                displayUsers(data.users || data); // Handle both {users: [...]} and [...] formats
             } catch (error) {
                 handleError(error);
             }
         }
 
-        // Call the function to get data
-        getData(apiUrl);
+        // Initial load
+        document.addEventListener('DOMContentLoaded', fetchUsers);
     </script>
 </body>
 </html>
