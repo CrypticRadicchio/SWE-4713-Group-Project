@@ -132,6 +132,7 @@
             <div id="email-error" class="validation-error"></div>
             
             <input type="date" name="dob" placeholder="Date of Birth" required>
+            <input type="hidden" name="creation_date" id="creation_date">
             <div id="dob-error" class="validation-error"></div>
             
             <input type="password" name="password" placeholder="Password (min 8 characters)" required minlength="8">
@@ -227,12 +228,22 @@
             
             if (!isValid) return;
             
+            // Set creation date and calculate expiration date
+            const creationDate = new Date().toISOString().split('T')[0];
+            document.getElementById('creation_date').value = creationDate;
+            
+            // Calculate password expiration date (3 months from now)
+            const expirationDate = new Date();
+            expirationDate.setMonth(expirationDate.getMonth() + 3);
+            const formattedExpirationDate = expirationDate.toISOString().split('T')[0];
+            
             // Prepare user data in API format
             const userData = {
                 email: formData.get('email'),
                 first_name: formData.get('first_name'),
                 last_name: formData.get('last_name'),
                 dob: formData.get('dob'),
+                password_expiration: formattedExpirationDate,
                 hashed_pass: formData.get('password'),
                 role: formData.get('role'),
                 security_answers: [

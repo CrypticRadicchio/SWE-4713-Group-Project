@@ -3,597 +3,505 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Management</title>
+    <title>Add Account - Fast Finances</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
             margin: 0;
-            padding: 0;
-            position: relative;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
         }
-
-        .header {
+        header {
             background-color: #007bff;
             color: white;
-            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 8px 20px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+            height: 60px;
         }
-
-        .admin-info {
+        .logo-container {
             display: flex;
             align-items: center;
+            gap: 10px;
         }
-
-        .header img.logo {
-            height: 30px;
-            margin-right: 10px;
+        .logo {
+            height: 40px;
+            width: auto;
         }
-
-        .header h1 {
-            font-size: 20px;
+        .header-title {
+            font-size: 22px;
             margin: 0;
-            font-weight: normal;
         }
-
-        .header-right {
+        .header-controls {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
         }
-
-        .header-right button {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            position: relative;
-        }
-
-        .header-right button:hover {
-            background-color: #e03e3e;
-            transform: scale(1.05);
-        }
-
         .user-info {
             display: flex;
             align-items: center;
-            margin-left: 15px;
-            gap: 8px;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
         }
-
         .user-info img {
-            width: 25px;
-            height: 25px;
+            height: 32px;
+            width: 32px;
             border-radius: 50%;
         }
-
-        .user-info span {
+        .user-name {
             font-size: 14px;
             color: white;
+            font-weight: 500;
         }
-
-        .container {
-            max-width: 850px;
-            margin: 20px auto;
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-row {
-            display: flex;
-            margin-bottom: 15px;
-            align-items: center;
-        }
-
-        .form-label {
-            width: 200px;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-
-        .form-input {
-            flex: 1;
-            padding: 10px;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .form-select {
-            flex: 1;
-            padding: 10px;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: white;
-        }
-
-        form button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background-color: #4CAF50;
+        .logout-btn {
+            background-color: #dc3545;
             color: white;
             border: none;
+            padding: 6px 12px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 14px;
         }
-
-        form button:hover {
-            background-color: #45a049;
+        .logout-btn:hover {
+            background-color: #c82333;
         }
-
-        .button-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .button-container a {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            margin: 0 5px;
+        .container {
+            padding: 80px 20px 60px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: calc(100vh - 140px);
             position: relative;
-            display: inline-block;
         }
-
-        .button-container a:hover {
-            background-color: #555;
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
         }
-
-        .calendar-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px;
+        .form-container {
+            background: #fff;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-            width: 220px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-
-        .calendar-header {
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-roster {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        .action-buttons {
             display: flex;
             justify-content: space-between;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        .status-toggle {
+            display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            gap: 10px;
         }
-
-        .calendar-title {
-            font-weight: bold;
-            font-size: 0.9em;
+        .status-toggle input {
+            width: auto;
         }
-
-        .calendar-days, .calendar-dates {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
-            font-size: 0.8em;
-        }
-
-        .calendar-day {
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .calendar-date {
-            text-align: center;
-            padding: 3px;
-            cursor: pointer;
-            border-radius: 3px;
-            font-size: 0.8em;
-        }
-
-        .calendar-date:hover {
-            background-color: #f0f0f0;
-        }
-
-        .current-date {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .tooltip .tooltiptext::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #555 transparent transparent transparent;
-        }
-
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-
         .spinner {
-            display: none;
             border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            border-top: 4px solid #007bff;
-            width: 30px;
-            height: 30px;
+            border-left-color: #007bff;
             animation: spin 1s linear infinite;
             margin: 20px auto;
+            display: none;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         .status-message {
-            display: none;
-            padding: 10px;
-            margin-top: 10px;
+            padding: 15px;
             border-radius: 5px;
+            margin: 20px 0;
             text-align: center;
+            display: none;
         }
-
         .success {
             background-color: #d4edda;
             color: #155724;
+            border: 1px solid #c3e6cb;
         }
-
         .error {
             background-color: #f8d7da;
             color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo" class="logo">
+            <h1 class="header-title">Fast Finances</h1>
+        </div>
+        <div class="header-controls">
+            <div class="user-info">
+                <img src="admin.png" alt="Admin Picture" id="admin-pic">
+                <div class="user-name" id="admin-username">Loading Admin...</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </header>
 
-<div class="header">
-    <div class="admin-info">
-        <img src="Logo.png" alt="Logo" class="logo">
-        <h1>Account Management</h1>
-    </div>
-    <div class="header-right">
-        <div class="user-info">
-            <img src="Admin.png" alt="Profile Picture" id="user-pic">
-            <span id="username">Loading...</span>
-        </div>
-        <button onclick="logout()" class="tooltip">
-            Logout
-            <span class="tooltiptext">Click to securely log out of the system</span>
-        </button>
-    </div>
-</div>
+    <div class="container">
+        <h2>Add New Account</h2>
+        
+        <div id="loading-spinner" class="spinner"></div>
+        <div id="error-message" class="status-message error"></div>
+        <div id="success-message" class="status-message success"></div>
+        
+        <div class="form-container">
+            <form id="account-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="account_id">Account ID</label>
+                        <input type="number" id="account_id" name="account_id" required >
+                    </div>
+                    <div class="form-group">
+                        <label for="account_name">Account Name</label>
+                        <input type="text" id="account_name" name="account_name" required>
+                    </div>
+                </div>
 
-<div class="container">
-    <form id="accountForm" onsubmit="addAccount(event)">
-        <h3>Create New Account</h3>
-        
-        <div id="statusMessage" class="status-message"></div>
-        
-        <div class="form-row">
-            <label class="form-label">Account Name:</label>
-            <input type="text" name="account_name" class="form-input" placeholder="e.g. Cash" required>
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Description:</label>
-            <input type="text" name="description" class="form-input" placeholder="Account description">
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Normal Side:</label>
-            <select name="normal_side" class="form-select" required>
-                <option value="">Select...</option>
-                <option value="Debit">Debit</option>
-                <option value="Credit">Credit</option>
-            </select>
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Category:</label>
-            <input type="text" name="category" class="form-input" placeholder="e.g. Asset" required>
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Subcategory:</label>
-            <input type="text" name="sub_category" class="form-input" placeholder="e.g. Current Assets" required>
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Initial Balance:</label>
-            <input type="number" name="initial_balance" class="form-input" placeholder="0.00" step="0.01" value="0">
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Debit:</label>
-            <input type="number" name="debit" class="form-input" placeholder="0.00" step="0.01" value="0">
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Credit:</label>
-            <input type="number" name="credit" class="form-input" placeholder="0.00" step="0.01" value="0">
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Statement:</label>
-            <select name="statement" class="form-select" required>
-                <option value="">Select...</option>
-                <option value="BS">Balance Sheet (BS)</option>
-                <option value="IS">Income Statement (IS)</option>
-                <option value="RE">Retained Earnings (RE)</option>
-            </select>
-        </div>
-        
-        <div class="form-row">
-            <label class="form-label">Comment:</label>
-            <input type="text" name="comment" class="form-input" placeholder="Optional notes">
-        </div>
-        
-        <div id="spinner" class="spinner"></div>
-        
-        <button type="submit" class="tooltip">
-            Add Account
-            <span class="tooltiptext">Submit this form to create a new account in the system</span>
-        </button>
-    </form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="order">Order</label>
+                        <input type="number" id="order" name="order" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="normal_side">Normal Side</label>
+                        <select id="normal_side" name="normal_side" required>
+                            <option value="debit">Debit</option>
+                            <option value="credit">Credit</option>
+                        </select>
+                    </div>
+                </div>
 
-    <div class="button-container">
-        <a href="Admin-Dashboard.html" class="tooltip">Return to Dashboard
-            <span class="tooltiptext">Go back to the main dashboard screen</span>
-        </a>
-        <a href="Admin_Accountants_Roster.html" class="tooltip">Back
-            <span class="tooltiptext">Return to the previous screen</span>
-        </a>
-    </div>
-</div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description"></textarea>
+                </div>
 
-<div class="calendar-container" id="calendar">
-    <div class="calendar-header">
-        <span class="calendar-title" id="calendar-month-year"></span>
-    </div>
-    <div class="calendar-days">
-        <div class="calendar-day">Sun</div>
-        <div class="calendar-day">Mon</div>
-        <div class="calendar-day">Tue</div>
-        <div class="calendar-day">Wed</div>
-        <div class="calendar-day">Thu</div>
-        <div class="calendar-day">Fri</div>
-        <div class="calendar-day">Sat</div>
-    </div>
-    <div class="calendar-dates" id="calendar-dates"></div>
-</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <input type="text" id="category" name="category" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sub_category">Sub Category</label>
+                        <input type="text" id="sub_category" name="sub_category" required>
+                    </div>
+                </div>
 
-<script>
-    // API Configuration
-    const API_BASE_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com';
-    
-    // Display the currently logged in user
-    function displayLoggedInUser() {
-        try {
-            // Get user from sessionStorage or localStorage
-            const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
-                             JSON.parse(localStorage.getItem("currentUser"));
-            
-            if (currentUser) {
-                // Determine display name
-                const displayName = currentUser.first_name 
-                    ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
-                    : currentUser.username || currentUser.id || "Administrator";
-                
-                document.getElementById('username').textContent = displayName;
-                
-                // Set profile picture if available
-                if (currentUser.profile_pic) {
-                    document.getElementById('user-pic').src = currentUser.profile_pic;
-                }
-                
-                return currentUser;
-            } else {
-                document.getElementById('username').textContent = "Administrator";
-                return null;
-            }
-        } catch (error) {
-            console.error('Error loading user data:', error);
-            document.getElementById('username').textContent = "Administrator";
-            return null;
-        }
-    }
-    
-    // Add account to the API
-    async function addAccount(event) {
-        event.preventDefault();
-        
-        document.getElementById('spinner').style.display = 'block';
-        document.getElementById('statusMessage').style.display = 'none';
-        
-        const currentUser = displayLoggedInUser();
-        
-        if (!currentUser || (!currentUser.id && !currentUser.user_id)) {
-            const errorMsg = "Error: No user logged in or user ID missing";
-            console.error(errorMsg);
-            showStatus(errorMsg, false);
-            document.getElementById('spinner').style.display = 'none';
-            return;
-        }
-        
-        // Use user_id if available, otherwise fall back to id
-        const userId = currentUser.user_id || currentUser.id;
-        
-        // Prepare the account data
-        const formData = {
-            account_name: document.querySelector('input[name="account_name"]').value.trim(),
-            description: document.querySelector('input[name="description"]').value.trim() || null,
-            normal_side: document.querySelector('select[name="normal_side"]').value,
-            category: document.querySelector('input[name="category"]').value.trim(),
-            sub_category: document.querySelector('input[name="sub_category"]').value.trim(),
-            initial_balance: parseFloat(document.querySelector('input[name="initial_balance"]').value) || 0,
-            debit: parseFloat(document.querySelector('input[name="debit"]').value) || 0,
-            credit: parseFloat(document.querySelector('input[name="credit"]').value) || 0,
-            statement: document.querySelector('select[name="statement"]').value,
-            comment: document.querySelector('input[name="comment"]').value.trim() || "",
-            status: true
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="initial_balance">Initial Balance</label>
+                        <input type="number" id="initial_balance" name="initial_balance" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="statement">Statement</label>
+                        <select id="statement" name="statement" required>
+                            <option value="BS">Balance Sheet</option>
+                            <option value="IS">Income Statement</option>
+                            <option value="RE">Retained Earnings</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="debit">Debit</label>
+                        <input type="number" id="debit" name="debit" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="credit">Credit</label>
+                        <input type="number" id="credit" name="credit" value="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="comment">Comment</label>
+                    <textarea id="comment" name="comment"></textarea>
+                </div>
+
+                <div class="form-group status-toggle">
+                    <input type="checkbox" id="status" name="status" checked>
+                    <label for="status">Account Active</label>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-back" onclick="window.location.href='admin-dashboard.html'">Dashboard</button>
+                    <button type="button" class="btn btn-roster" onclick="window.location.href='Admin_Accountants_Roster.html'">Accountants Roster</button>
+                    <button type="submit" class="btn btn-submit">Add Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const elements = {
+            spinner: document.getElementById('loading-spinner'),
+            errorMessage: document.getElementById('error-message'),
+            successMessage: document.getElementById('success-message'),
+            form: document.getElementById('account-form'),
+            adminUsername: document.getElementById('admin-username'),
+            adminPic: document.getElementById('admin-pic'),
+            accountIdInput: document.getElementById('account_id')
         };
 
-        // Validate required fields
-        if (!formData.account_name || !formData.normal_side || !formData.category || 
-            !formData.sub_category || !formData.statement) {
-            const errorMsg = "Please fill in all required fields!";
-            console.error(errorMsg);
-            showStatus(errorMsg, false);
-            document.getElementById('spinner').style.display = 'none';
-            return;
-        }
+        // Current Admin Data
+        let currentAdmin = null;
+        let lastAccountId = 10000000; // Starting account number
 
-        try {
-            // Include user ID in the URL
-            const apiUrl = `${API_BASE_URL}/accounts?user_id=${userId}`;
-            
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API error response:", errorData);
-                throw new Error(errorData.message || 'Failed to create account');
+        // Initialize account ID
+        function initializeAccountId() {
+            // In a real app, you would fetch the last used account ID from your API
+            // For now, we'll use localStorage to persist between page refreshes
+            const storedId = localStorage.getItem('lastAccountId');
+            if (storedId) {
+                lastAccountId = parseInt(storedId);
             }
-
-            const result = await response.json();
-            console.log("API success response:", result);
-            
-            showStatus("Account created successfully!", true);
-            document.getElementById("accountForm").reset();
-            
-        } catch (error) {
-            console.error('Error creating account:', error);
-            showStatus(`Error: ${error.message}`, false);
-        } finally {
-            document.getElementById('spinner').style.display = 'none';
+            elements.accountIdInput.value = lastAccountId + 1;
         }
-    }
 
-    // Show status message
-    function showStatus(message, isSuccess) {
-        const statusElement = document.getElementById('statusMessage');
-        statusElement.textContent = message;
-        statusElement.className = isSuccess ? 'status-message success' : 'status-message error';
-        statusElement.style.display = 'block';
-        
-        setTimeout(() => {
-            statusElement.style.display = 'none';
-        }, 5000);
-    }
+        // Display the currently logged in admin user
+        function displayLoggedInUser() {
+            try {
+                // Debug: Log all storage contents
+                console.log("Session Storage:", JSON.stringify(sessionStorage, null, 2));
+                console.log("Local Storage:", JSON.stringify(localStorage, null, 2));
 
-    function logout() {
-        // Clear user session
-        sessionStorage.removeItem("currentUser");
-        localStorage.removeItem("currentUser");
-        window.location.href = 'Login.html';
-    }
+                // Try all possible storage locations and keys
+                const adminData = sessionStorage.getItem("currentUser") || 
+                                 sessionStorage.getItem("user") ||
+                                 sessionStorage.getItem("admin") ||
+                                 localStorage.getItem("currentUser") ||
+                                 localStorage.getItem("user") ||
+                                 localStorage.getItem("admin");
 
-    // Calendar functionality
-    function renderCalendar() {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        const currentDate = now.getDate();
-        
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-                           "July", "August", "September", "October", "November", "December"];
-        document.getElementById('calendar-month-year').textContent = 
-            `${monthNames[currentMonth]} ${currentYear}`;
-        
-        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        
-        const datesContainer = document.getElementById('calendar-dates');
-        datesContainer.innerHTML = '';
-        
-        // Fill in empty cells for days before the first of the month
-        for (let i = 0; i < firstDay; i++) {
-            const emptyCell = document.createElement('div');
-            emptyCell.className = 'calendar-date';
-            datesContainer.appendChild(emptyCell);
-        }
-        
-        // Create cells for each day of the month
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateCell = document.createElement('div');
-            dateCell.className = 'calendar-date';
-            dateCell.textContent = day;
-            
-            if (day === currentDate) {
-                dateCell.classList.add('current-date');
-            }
-            
-            datesContainer.appendChild(dateCell);
-        }
-        
-        // Fill in remaining empty cells to complete the grid (if needed)
-        const totalCells = firstDay + daysInMonth;
-        const remainingCells = 7 - (totalCells % 7);
-        
-        if (remainingCells < 7) {
-            for (let i = 0; i < remainingCells; i++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'calendar-date';
-                datesContainer.appendChild(emptyCell);
+                if (adminData) {
+                    const parsed = JSON.parse(adminData);
+                    currentAdmin = parsed.user || parsed.data || parsed;
+                    
+                    // Ensure we have required fields
+                    if (!currentAdmin.user_id) {
+                        if (currentAdmin.id) {
+                            currentAdmin.user_id = currentAdmin.id;
+                        } else if (currentAdmin.username) {
+                            currentAdmin.user_id = currentAdmin.username;
+                        } else if (currentAdmin.email) {
+                            currentAdmin.user_id = currentAdmin.email;
+                        }
+                    }
+
+                    // Set display name
+                    const displayName = currentAdmin.first_name 
+                        ? `${currentAdmin.first_name} ${currentAdmin.last_name || ''}`.trim()
+                        : currentAdmin.username || currentAdmin.email || "Administrator";
+                        
+                    elements.adminUsername.textContent = displayName;
+                    
+                    // Set profile picture
+                    if (currentAdmin.profile_picture) {
+                        elements.adminPic.src = currentAdmin.profile_picture;
+                    } else {
+                        elements.adminPic.src = "admin.png";
+                    }
+                    
+                    console.log("Current Admin:", currentAdmin);
+                    return true;
+                } else {
+                    throw new Error("No admin user data found in storage");
+                }
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                elements.adminUsername.textContent = "Administrator";
+                showError("Failed to load admin session. Please log in again.");
+                return false;
             }
         }
-    }
 
-    // Initialize on page load
-    window.onload = function() {
-        // Set default values
-        document.querySelector('input[name="initial_balance"]').value = '0.00';
-        document.querySelector('input[name="debit"]').value = '0.00';
-        document.querySelector('input[name="credit"]').value = '0.00';
-        
-        // Display user and render calendar
-        displayLoggedInUser();
-        renderCalendar();
-    };
-</script>
+        // Handle form submission
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            elements.spinner.style.display = 'block';
+            hideMessages();
+            
+            try {
+                // First try to load admin data if not already loaded
+                if (!currentAdmin || !currentAdmin.user_id) {
+                    const loaded = displayLoggedInUser();
+                    if (!loaded) {
+                        throw new Error("Admin session not properly loaded. Please log in again.");
+                    }
+                }
+
+                const formData = {
+                    account_id: parseInt(document.getElementById('account_id').value),
+                    account_name: document.getElementById('account_name').value,
+                    order: parseInt(document.getElementById('order').value),
+                    description: document.getElementById('description').value,
+                    normal_side: document.getElementById('normal_side').value,
+                    category: document.getElementById('category').value,
+                    sub_category: document.getElementById('sub_category').value,
+                    initial_balance: parseInt(document.getElementById('initial_balance').value),
+                    debit: parseInt(document.getElementById('debit').value),
+                    credit: parseInt(document.getElementById('credit').value),
+                    statement: document.getElementById('statement').value,
+                    comment: document.getElementById('comment').value,
+                    status: document.getElementById('status').checked
+                };
+
+                const apiUrl = `https://fast-finance-e250d1a7d65a.herokuapp.com/accounts?user_id=${currentAdmin.user_id}`;
+                
+                console.log("API Request:", {
+                    url: apiUrl,
+                    method: 'POST',
+                    admin_id: currentAdmin.user_id,
+                    data: formData
+                });
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                console.log("API Response:", result);
+                
+                if (!response.ok) {
+                    if (result.detail && Array.isArray(result.detail)) {
+                        const errorMessages = result.detail.map(err => `${err.loc ? err.loc.join('.') + ': ' : ''}${err.msg}`).join('\n');
+                        throw new Error(errorMessages || "Validation errors occurred");
+                    }
+                    throw new Error(result.message || "Server returned an error");
+                }
+
+                // Update the last used account ID
+                lastAccountId = formData.account_id;
+                localStorage.setItem('lastAccountId', lastAccountId.toString());
+                
+                // Increment for next account
+                elements.accountIdInput.value = lastAccountId + 1;
+
+                showSuccess("Account added successfully!");
+                elements.form.reset();
+                document.getElementById('status').checked = true; // Keep status checked after reset
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                showError(error.message || "Failed to add account. Please check your data and try again.");
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        // Helper functions
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+            setTimeout(() => elements.errorMessage.style.display = 'none', 5000);
+        }
+
+        function showSuccess(message) {
+            elements.successMessage.textContent = message;
+            elements.successMessage.style.display = 'block';
+            setTimeout(() => elements.successMessage.style.display = 'none', 3000);
+        }
+
+        function hideMessages() {
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("admin");
+            localStorage.removeItem("currentUser");
+            localStorage.removeItem("user");
+            localStorage.removeItem("admin");
+            window.location.href = 'login.html';
+        }
+
+        // Initialize the page
+        window.onload = () => {
+            initializeAccountId();
+            displayLoggedInUser();
+            elements.form.addEventListener('submit', handleFormSubmit);
+        };
+    </script>
 </body>
 </html>

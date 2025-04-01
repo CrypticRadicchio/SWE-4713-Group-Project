@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Roster</title>
+    <title>Chart Of Accounts</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,6 +46,7 @@
             display: flex;
             align-items: center;
             height: 100%;
+            gap: 15px;
         }
         
         .user-info img {
@@ -102,9 +103,11 @@
         .btn-view { background-color: #17a2b8; }
         .btn-edit { background-color: #ffc107; color: #212529; }
         .btn-add { background-color: #28a745; }
+        .btn-select { background-color: #20c997; }
         .btn-logout { 
             background-color: #ff4d4d;
-            padding: 8px 15px;
+            padding: 6px 12px;
+            font-size: 13px;
         }
         .btn-back { background-color: #6c757d; }
         .btn-main-menu { background-color: #007bff; }
@@ -164,6 +167,20 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .number-cell {
+            text-align: right;
+        }
+
+        .selected-row {
+            background-color: #e6f7ff;
+        }
+
+        .select-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -175,18 +192,19 @@
         <div class="user-info">
             <img src="Admin.png" alt="Admin Profile">
             <span id="username">Admin</span>
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
     
     <div class="container">
-        <h2>Account Roster</h2>
+        <h2>Charts of Accounts</h2>
 
         <div class="filter-container">
             <select id="filter-category" class="filter-select">
                 <option value="account_id">Account ID</option>
                 <option value="account_name">Account Name</option>
-                <option value="description">Description</option>
                 <option value="normal_side">Normal Side</option>
+                <option value="order">Order</option>
                 <option value="category">Category</option>
                 <option value="sub_category">Subcategory</option>
                 <option value="initial_balance">Initial Balance</option>
@@ -194,7 +212,6 @@
                 <option value="credit">Credit</option>
                 <option value="balance">Balance</option>
                 <option value="statement">Statement</option>
-                <option value="comment">Comment</option>
                 <option value="status">Status</option>
             </select>
             <input type="text" id="search" class="search-input" oninput="applySearchFilter()" placeholder="Search...">
@@ -205,10 +222,11 @@
         <table>
             <thead>
                 <tr>
+                    <th>Select</th>
                     <th>Account ID</th>
                     <th>Account Name</th>
-                    <th>Description</th>
                     <th>Normal Side</th>
+                    <th>Order</th>
                     <th>Category</th>
                     <th>Subcategory</th>
                     <th>Initial Balance</th>
@@ -216,7 +234,6 @@
                     <th>Credit</th>
                     <th>Balance</th>
                     <th>Statement</th>
-                    <th>Comment</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -231,7 +248,6 @@
         </div>
 
         <div class="separate-buttons">
-            <button class="btn btn-logout" onclick="logout()">Logout</button>
             <button class="btn btn-back" onclick="window.location.href='Admin-Dashboard.html'">Back</button>
             <button class="btn btn-main-menu" onclick="window.location.href='Admin-Dashboard.html'">Main Menu</button>
         </div>
@@ -240,6 +256,13 @@
     <script>
         // Global variable to store accounts data
         let accountsData = [];
+        let selectedAccountId = null;
+
+        // Function to format numbers with commas
+        function formatNumber(num) {
+            if (num === null || num === undefined) return '0.00';
+            return parseFloat(num).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
 
         async function fetchAccounts() {
             try {
@@ -274,19 +297,20 @@
                 const statusClass = account.status ? 'status-active' : 'status-inactive';
                 
                 const row = document.createElement("tr");
+                row.dataset.accountId = account.account_id;
                 row.innerHTML = `
+                    <td><input type="checkbox" class="select-checkbox" onclick="toggleAccountSelection('${account.account_id}', this)"></td>
                     <td>${account.account_id || ''}</td>
                     <td>${account.account_name || ''}</td>
-                    <td>${account.description || ''}</td>
                     <td>${account.normal_side || ''}</td>
+                    <td>${account.order || ''}</td>
                     <td>${account.category || ''}</td>
                     <td>${account.sub_category || ''}</td>
-                    <td>${(account.initial_balance || 0).toFixed(2)}</td>
-                    <td>${(account.debit || 0).toFixed(2)}</td>
-                    <td>${(account.credit || 0).toFixed(2)}</td>
-                    <td>${balance.toFixed(2)}</td>
+                    <td class="number-cell">${formatNumber(account.initial_balance)}</td>
+                    <td class="number-cell">${formatNumber(account.debit)}</td>
+                    <td class="number-cell">${formatNumber(account.credit)}</td>
+                    <td class="number-cell">${formatNumber(balance)}</td>
                     <td>${account.statement || ''}</td>
-                    <td>${account.comment || ''}</td>
                     <td class="${statusClass}">${statusDisplay}</td>
                     <td>
                         <div class="action-buttons">
@@ -300,6 +324,27 @@
             });
         }
 
+        function toggleAccountSelection(accountId, checkbox) {
+            const row = checkbox.closest('tr');
+            if (checkbox.checked) {
+                // Uncheck all other checkboxes
+                document.querySelectorAll('.select-checkbox').forEach(cb => {
+                    if (cb !== checkbox) cb.checked = false;
+                });
+                
+                selectedAccountId = accountId;
+                row.classList.add('selected-row');
+                
+                // Remove selection from other rows
+                document.querySelectorAll('tr').forEach(r => {
+                    if (r !== row) r.classList.remove('selected-row');
+                });
+            } else {
+                selectedAccountId = null;
+                row.classList.remove('selected-row');
+            }
+        }
+
         function applySearchFilter() {
             const searchValue = document.getElementById("search").value.toLowerCase();
             const filterCategory = document.getElementById("filter-category").value;
@@ -311,7 +356,7 @@
             
             const filteredAccounts = accountsData.filter(account => {
                 // Handle numeric fields
-                if (['initial_balance', 'debit', 'credit', 'balance'].includes(filterCategory)) {
+                if (['initial_balance', 'debit', 'credit', 'balance', 'order'].includes(filterCategory)) {
                     return String(account[filterCategory] || 0).includes(searchValue);
                 }
                 
@@ -331,7 +376,7 @@
         function viewAccountLedger(accountId) {
             const account = accountsData.find(acc => acc.account_id == accountId);
             if (account) {
-                localStorage.setItem('currentLedgerAccount', JSON.stringify(account));
+                localStorage.setItem('selectedAccount', JSON.stringify(account));
                 window.location.href = 'Admin-Current-Ledger-Roster.html';
             } else {
                 alert('Account not found!');
@@ -341,7 +386,7 @@
         function viewAccount(accountId) {
             const account = accountsData.find(acc => acc.account_id == accountId);
             if (account) {
-                localStorage.setItem('currentViewAccount', JSON.stringify(account));
+                localStorage.setItem('selectedAccount', JSON.stringify(account));
                 window.location.href = 'Admin-Accountant-View.html';
             } else {
                 alert('Account not found!');
@@ -351,7 +396,7 @@
         function editAccount(accountId) {
             const account = accountsData.find(acc => acc.account_id == accountId);
             if (account) {
-                localStorage.setItem("accountToEdit", JSON.stringify(account));
+                localStorage.setItem("selectedAccount", JSON.stringify(account));
                 window.location.href = "Admin_Accountants_Edit.html";
             } else {
                 alert('Account not found!');
@@ -359,19 +404,7 @@
         }
 
         function addAccount() {
-            // Get current user from session or local storage
-            const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
-                              JSON.parse(localStorage.getItem("currentUser"));
-            
-            if (currentUser && (currentUser.id || currentUser.user_id)) {
-                // Store the user ID to pass to the next page
-                const userId = currentUser.id || currentUser.user_id;
-                localStorage.setItem("currentUserId", userId);
-                window.location.href = 'Admin_Accountants_Management.html';
-            } else {
-                alert('User session not found. Please log in again.');
-                logout();
-            }
+            window.location.href = 'Admin_Accountants_Management.html';
         }
 
         function displayLoggedInUser() {
