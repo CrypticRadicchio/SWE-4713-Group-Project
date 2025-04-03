@@ -3,306 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Management- Employee New Account</title>
+    <title>Create New Account</title>
     <style>
-        /* Global Styles */
         body {
             font-family: Arial, sans-serif;
+            background-color: white;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+        }
+        .banner {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .banner img {
+            height: 60px;
+            margin-right: 15px;
+        }
+        .banner h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
         }
-
-        /* Header Styling */
-        .header {
-            width: 100%;
-            background-color: #007bff;
-            color: white;
-            padding: 20px;
-            position: fixed;
-            top: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            box-sizing: border-box;
-        }
-
-        .header img {
-            position: absolute;
-            left: 20px;
-            height: 40px;
-            width: auto;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 26px;
-            flex-grow: 1;
-            text-align: center;
-        }
-
-        /* User Info Styling (Right Side) */
-        .user-info {
-            display: flex;
-            align-items: center;
-            position: absolute;
-            right: 20px;
-        }
-
-        .user-info img {
-            height: 40px;
-            width: 40px;
-            border-radius: 50%;
-            margin-right: 10px;  /* Space between image and name */
-        }
-
-        .user-name {
-            font-size: 18px;
-            color: white;
-        }
-
-        /* Form Container */
-        .container {
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            margin-top: 100px;
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
         .container h2 {
             margin-bottom: 20px;
-            font-size: 22px;
-            color: #333;
         }
-
-        /* Input Fields */
-        .container input {
-            width: 100%;
-            padding: 12px 20px;
-            margin: 10px 0;
-            border-radius: 5px;
+        .container input, .container select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 5px;
             border: 1px solid #ccc;
-            font-size: 16px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            border-radius: 4px;
             box-sizing: border-box;
         }
-
-        .container input:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-            outline: none;
-        }
-
-        /* Submit Button */
         .container button {
             width: 100%;
             padding: 12px;
-            background-color: #007bff;
-            color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        .container button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        /* Back Button */
-        .back-btn {
-            background-color: #ccc;
             margin-top: 10px;
-            color: black;
         }
-
-        .back-btn:hover {
-            background-color: #bbb;
+        .container .submit-btn {
+            background-color: #007BFF;
+            color: white;
         }
-
-        /* Popup Styling */
-        .popup {
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: white;
-            padding: 20px;
-            border: 2px solid #007bff;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            z-index: 1001;
+        .container .back-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-bottom: 15px;
             display: none;
-            border-radius: 8px;
+            width: 100%;
+            text-align: center;
         }
-
-        .popup h2 {
+        .success-message {
+            color: #28a745;
+            margin-bottom: 15px;
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+        .loading {
+            display: none;
+            color: #007BFF;
+            margin-bottom: 15px;
+        }
+        .security-questions {
+            width: 100%;
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .security-questions h3 {
             margin-top: 0;
-            font-size: 20px;
+            font-size: 1rem;
+            color: #495057;
         }
-
-        .popup button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: transparent;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
+        .question-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .validation-error {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            display: none;
         }
     </style>
-    <script>
-        function hashPassword(password) {
-            return btoa(password);  // Base64 encoding as a placeholder
-        }
-
-        function generateUserId(firstName, lastName, dob) {
-            const date = new Date(dob);
-            const monthCode = ('0' + (date.getMonth() + 1)).slice(-2); 
-            const yearCode = date.getFullYear().toString().slice(-2); 
-            return firstName + lastName + monthCode + yearCode;
-        }
-
-        async function postData(url, data) {
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const responseData = await response.json();
-                alert("Account created successfully!");
-
-                // Wait 3 seconds before getting the latest user data
-                setTimeout(() => {
-                    getData(url);
-                }, 500);
-
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred while creating your account.');
-            }
-        }
-
-        // Fetch the most recent user data from the server
-        async function getData(url) {
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const latestUser = data[data.length - 1]; // Assuming the latest user is at the end of the array
-                displayPopup(latestUser);
-
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        // Display the popup with user ID
-        function displayPopup(user) {
-            const popup = document.getElementById('popup');
-            popup.querySelector('.user-info').textContent = `User ID: ${user.id}`;
-            popup.style.display = 'block';
-        }
-
-        // Close the popup
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
-        }
-
-        function handleSubmit(event) {
-            event.preventDefault();
-
-            const firstName = document.querySelector('input[name="first_name"]').value;
-            const lastName = document.querySelector('input[name="last_name"]').value;
-            const email = document.querySelector('input[name="email"]').value;
-            const address = document.querySelector('input[name="address"]').value;
-            const dob = document.querySelector('input[name="DOB"]').value;
-            const password = document.querySelector('input[name="password"]').value;
-            const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
-
-            if (password !== confirmPassword) {
-                alert('Passwords do not match. Please try again.');
-                return;
-            }
-
-            const userId = generateUserId(firstName, lastName, dob);
-            const hashedPass = hashPassword(password);
-
-            const userData = {
-                id: userId,
-                hashed_pass: hashedPass,
-                email: email,
-                role: "Accountant",
-                status: true,
-                first_name: firstName,
-                last_name: lastName,
-                address: address,
-                DOB: dob
-            };
-
-            const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
-
-            postData(apiUrl, userData);
-        }
-    </script>
 </head>
 <body>
-    <div class="header">
-        <img src="Logo.png" alt="Logo" width="70" height="70">
+    <div class="banner">
+        <img src="Logo.png" alt="Fast Finances Logo">
         <h1>Fast Finances</h1>
-        <div class="user-info">
-            <img src="user.png" alt="User Picture">
-            <div class="user-name">User Name</div>
-        </div>
     </div>
     <div class="container">
         <h2>Create New Account</h2>
-        <form onsubmit="handleSubmit(event)">
-            <input type="text" name="first_name" placeholder="First Name" required>
-            <input type="text" name="last_name" placeholder="Last Name" required>
-            <input type="text" name="address" placeholder="Address" required>
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+        <div id="loading" class="loading">Creating account...</div>
+        <form id="registrationForm">
+            <input type="text" name="first_name" placeholder="First Name" required minlength="2">
+            <div id="first_name-error" class="validation-error"></div>
+            
+            <input type="text" name="last_name" placeholder="Last Name" required minlength="2">
+            <div id="last_name-error" class="validation-error"></div>
+            
             <input type="email" name="email" placeholder="Email" required>
-            <input type="date" name="DOB" placeholder="Date of Birth" required>
-            <input type="password" name="password" placeholder="Password" required>
+            <div id="email-error" class="validation-error"></div>
+            
+            <input type="date" name="dob" placeholder="Date of Birth" required>
+            <div id="dob-error" class="validation-error"></div>
+            
+            <input type="password" name="password" placeholder="Password (min 8 characters)" required minlength="8">
+            <div id="password-error" class="validation-error"></div>
+            
             <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-            <button type="submit">Submit</button>
-            <button type="button" class="back-btn" onclick="window.location.href='Management-Dashboard.html'">Back To Dashboard</button>
+            <div id="confirm_password-error" class="validation-error"></div>
+            
+            <select name="role" required>
+                <option value="" disabled selected>Select Role</option>
+                <option value="accountant">Accountant</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+            </select>
+            <div id="role-error" class="validation-error"></div>
+            
+            <div class="security-questions">
+                <h3>Security Questions (For Password Recovery)</h3>
+                
+                <label class="question-label">1. What is your mother's maiden name?</label>
+                <input type="text" name="security_answer_1" placeholder="Your answer" required minlength="2">
+                <div id="security_answer_1-error" class="validation-error"></div>
+                
+                <label class="question-label">2. What city were you born in?</label>
+                <input type="text" name="security_answer_2" placeholder="Your answer" required minlength="2">
+                <div id="security_answer_2-error" class="validation-error"></div>
+                
+                <label class="question-label">3. What was your first job?</label>
+                <input type="text" name="security_answer_3" placeholder="Your answer" required minlength="2">
+                <div id="security_answer_3-error" class="validation-error"></div>
+            </div>
+            
+            <button type="submit" class="submit-btn">Submit</button>
+            <button type="button" class="back-btn" onclick="window.location.href='Management-Dashboard.html'">Back</button>
         </form>
     </div>
 
-    <!-- Popup for new account info -->
-    <div id="popup" class="popup">
-        <button onclick="closePopup()">X</button>
-        <h2>New Account Created</h2>
-        <p class="user-info">Loading...</p>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for pending registrations
+            const pendingRegistration = localStorage.getItem('pendingRegistration');
+            if (pendingRegistration) {
+                try {
+                    const data = JSON.parse(pendingRegistration);
+                    console.log('Found pending registration from:', data.timestamp || 'unknown time');
+                } catch (e) {
+                    console.error('Error parsing pending registration:', e);
+                }
+            }
+        });
+
+        document.getElementById('registrationForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const errorElement = document.getElementById('error-message');
+            const successElement = document.getElementById('success-message');
+            const loadingElement = document.getElementById('loading');
+            
+            // Clear previous messages and errors
+            errorElement.style.display = 'none';
+            successElement.style.display = 'none';
+            document.querySelectorAll('.validation-error').forEach(el => {
+                el.style.display = 'none';
+                el.textContent = '';
+            });
+            
+            console.log('Starting form validation...');
+            
+            // Client-side validation
+            let isValid = true;
+            
+            // Validate password match
+            if (formData.get('password') !== formData.get('confirm_password')) {
+                showFieldError('confirm_password', "Passwords do not match!");
+                isValid = false;
+            }
+
+            // Validate required fields
+            const requiredFields = [
+                'first_name', 'last_name', 'email', 'dob',
+                'password', 'confirm_password', 'role',
+                'security_answer_1', 'security_answer_2', 'security_answer_3'
+            ];
+            
+            requiredFields.forEach(field => {
+                if (!formData.get(field)) {
+                    showFieldError(field, "This field is required");
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) return;
+            
+            // Prepare user data in API format
+            const userData = {
+                email: formData.get('email'),
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                dob: formData.get('dob'),
+                hashed_pass: formData.get('password'),
+                role: formData.get('role'),
+                security_answers: [
+                    formData.get('security_answer_1').trim(),
+                    formData.get('security_answer_2').trim(),
+                    formData.get('security_answer_3').trim()
+                ]
+            };
+            
+            console.log('Prepared user data:', userData);
+            
+            // Show loading indicator
+            loadingElement.style.display = 'block';
+            
+            try {
+                const apiUrl = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users/new_user';
+                console.log('Attempting to call API:', apiUrl, 'with method: POST');
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                console.log('API response received, status:', response.status);
+                
+                const result = await response.json();
+                console.log('API response data:', result);
+                
+                if (!response.ok) {
+                    // Handle 422 validation errors
+                    if (response.status === 422 && Array.isArray(result.detail)) {
+                        result.detail.forEach(error => {
+                            // Map API field names to form field names
+                            let fieldName = '';
+                            if (error.loc && error.loc.length > 1) {
+                                fieldName = error.loc[1];
+                                // Handle security_answers array index
+                                if (fieldName === 'security_answers' && error.loc[2]) {
+                                    const indexMatch = error.loc[2].toString().match(/\d+/);
+                                    if (indexMatch) {
+                                        fieldName = `security_answer_${parseInt(indexMatch[0]) + 1}`;
+                                    }
+                                }
+                            }
+                            
+                            if (fieldName && document.getElementById(`${fieldName}-error`)) {
+                                showFieldError(fieldName, error.msg);
+                            } else {
+                                showError(errorElement, error.msg);
+                            }
+                        });
+                        return;
+                    }
+                    throw new Error(result.detail || result.message || "Failed to create account");
+                }
+                
+                console.log('Account created successfully');
+                // Clear any pending registration
+                localStorage.removeItem('pendingRegistration');
+                showSuccess(successElement, "Account created successfully! Redirecting to login page...");
+                setTimeout(() => {
+                    window.location.href = 'Management-Dashboard.html';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Registration Error:', error);
+                
+                // Fallback: Store registration data locally if API fails
+                try {
+                    localStorage.setItem('pendingRegistration', JSON.stringify({
+                        userData: userData,
+                        timestamp: new Date().toISOString()
+                    }));
+                    console.log('Saved registration data locally for later submission');
+                } catch (storageError) {
+                    console.error('Failed to save registration data locally:', storageError);
+                }
+                
+                showError(errorElement, error.message || "Failed to create account. Please try again later.");
+            } finally {
+                loadingElement.style.display = 'none';
+                console.log('Loading indicator hidden');
+            }
+        });
+        
+        function showError(element, message) {
+            console.log('Showing error:', message);
+            element.textContent = message;
+            element.style.display = 'block';
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function showSuccess(element, message) {
+            console.log('Showing success:', message);
+            element.textContent = message;
+            element.style.display = 'block';
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function showFieldError(fieldName, message) {
+            const errorElement = document.getElementById(`${fieldName}-error`);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                const inputElement = document.querySelector(`[name="${fieldName}"]`);
+                if (inputElement) {
+                    inputElement.focus();
+                    inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                showError(document.getElementById('error-message'), message);
+            }
+        }
+    </script>
 </body>
 </html>
+       

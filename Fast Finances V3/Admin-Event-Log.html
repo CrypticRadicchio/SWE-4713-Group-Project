@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Log - Fast Finances</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            font-size: 14px;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+            height: 60px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .header-title {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        /* User Info Section */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Container */
+        .container {
+            padding: 70px 15px 60px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: calc(100vh - 130px);
+            position: relative;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+            line-height: 1.4;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 15px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-mainmenu {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-page {
+            background-color: #e9ecef;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            margin: 0 3px;
+            min-width: 30px;
+        }
+
+        .btn-page.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f7f7f7;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            border-top: 1px solid #ddd;
+            z-index: 999;
+            gap: 8px;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Status messages */
+        .status-message {
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            text-align: center;
+            display: none;
+            font-size: 13px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Status indicators */
+        .status-info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+
+        .status-warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .status-critical {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* New styles for profile changes */
+        .details-container {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 13px;
+            padding: 4px;
+        }
+
+        .profile-changes {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .change-item {
+            padding: 4px;
+            border-left: 2px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        .change-from {
+            color: #dc3545;
+            text-decoration: line-through;
+            margin-bottom: 2px;
+            font-size: 12px;
+        }
+
+        .change-to {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .change-item strong {
+            display: block;
+            margin-bottom: 3px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        /* Pagination controls */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .page-info {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="logo-container">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <h1 class="header-title">Fast Finances</h1>
+        </div>
+        <div class="header-controls">
+            <div class="user-info">
+                <img src="Admin.png" alt="User Picture" id="admin-pic">
+                <div class="user-name" id="admin-username">Loading Admin...</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container">
+        <h2>Event Log</h2>
+        
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="spinner" style="display: none;"></div>
+        
+        <!-- Status Messages -->
+        <div id="error-message" class="status-message error" style="display: none;"></div>
+        <div id="success-message" class="status-message success" style="display: none;"></div>
+        
+        <!-- Refresh Button -->
+        <button class="btn btn-mainmenu" style="margin-bottom: 15px;" onclick="fetchEvents()">Refresh Events</button>
+        
+        <!-- Events Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Severity</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody id="events-table-body">
+                <tr>
+                    <td colspan="4" style="text-align: center;">Loading event data...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination Info -->
+        <div class="page-info" id="page-info">Showing 0-0 of 0 events</div>
+        
+        <!-- Pagination Controls -->
+        <div class="pagination" id="pagination-controls">
+            <button class="btn btn-page" id="prev-page" disabled>Previous</button>
+            <div id="page-buttons"></div>
+            <button class="btn btn-page" id="next-page" disabled>Next</button>
+        </div>
+    </div>
+
+    <!-- Action Buttons (Fixed at Bottom) -->
+    <div class="action-buttons">
+        <button class="btn btn-back" onclick="window.location.href='Admin-Dashboard.html'">Main Menu</button>
+    </div>
+
+    <script>
+        const API_EVENTS_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com/events';
+        const EVENTS_PER_PAGE = 50;
+        
+        // DOM Elements
+        const elements = {
+            spinner: document.getElementById('loading-spinner'),
+            errorMessage: document.getElementById('error-message'),
+            successMessage: document.getElementById('success-message'),
+            tableBody: document.getElementById('events-table-body'),
+            adminUsername: document.getElementById('admin-username'),
+            adminPic: document.getElementById('admin-pic'),
+            pageInfo: document.getElementById('page-info'),
+            paginationControls: document.getElementById('pagination-controls'),
+            prevPageBtn: document.getElementById('prev-page'),
+            nextPageBtn: document.getElementById('next-page'),
+            pageButtons: document.getElementById('page-buttons')
+        };
+
+        // State
+        let allEvents = [];
+        let currentPage = 1;
+        let totalPages = 1;
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // Get severity class
+        function getSeverityClass(severity) {
+            switch(severity?.toLowerCase()) {
+                case 'warning': return 'status-warning';
+                case 'critical': return 'status-critical';
+                default: return 'status-info';
+            }
+        }
+
+        // Display the currently logged in user
+        function displayLoggedInUser() {
+            try {
+                const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                                 JSON.parse(localStorage.getItem("currentUser"));
+                
+                if (currentUser) {
+                    const displayName = currentUser.first_name 
+                        ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
+                        : currentUser.username || "Administrator";
+                    elements.adminUsername.textContent = displayName;
+                    
+                    if (currentUser.profile_picture) {
+                        elements.adminPic.src = currentUser.profile_picture;
+                    }
+                } else {
+                    elements.adminUsername.textContent = "Administrator";
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                elements.adminUsername.textContent = "Administrator";
+            }
+        }
+
+        // Fetch events from API
+        async function fetchEvents() {
+            elements.spinner.style.display = 'block';
+            hideAllMessages();
+            
+            try {
+                const response = await fetch(API_EVENTS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    allEvents = [];
+                    showSuccess("No events found in the system");
+                } else {
+                    // Sort events by timestamp (newest first)
+                    allEvents = data.sort((a, b) => {
+                        const dateA = new Date(a.timestamp || `${a.date} ${a.time}`);
+                        const dateB = new Date(b.timestamp || `${b.date} ${b.time}`);
+                        return dateB - dateA;
+                    });
+                    
+                    showSuccess(`Loaded ${allEvents.length} events successfully`);
+                }
+                
+                // Initialize pagination
+                totalPages = Math.ceil(allEvents.length / EVENTS_PER_PAGE);
+                currentPage = 1;
+                updatePagination();
+                renderEvents();
+            } catch (error) {
+                handleFetchError(error);
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        // Render events for current page
+        function renderEvents() {
+            const tableBody = document.getElementById('events-table-body');
+            tableBody.innerHTML = '';
+
+            if (allEvents.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No events found</td></tr>';
+                return;
+            }
+
+            const startIdx = (currentPage - 1) * EVENTS_PER_PAGE;
+            const endIdx = Math.min(startIdx + EVENTS_PER_PAGE, allEvents.length);
+            const pageEvents = allEvents.slice(startIdx, endIdx);
+
+            pageEvents.forEach(event => {
+                const severityClass = getSeverityClass(event.severity);
+                const severityText = event.severity || 'Info';
+                const user = event.user_id || (event.from?._id ? event.from._id : 'N/A');
+                
+                // Handle the details column
+                let detailsContent = '';
+                
+                if (event.from && event.to) {
+                    // This is an update event
+                    if (Object.keys(event.from).length === 0) {
+                        // Creation event
+                        const objType = event.to._id ? 'user' : 'file';
+                        detailsContent = `New ${objType} was created: ${JSON.stringify(event.to, null, 2)}`;
+                    } else {
+                        // Update event
+                        detailsContent = formatProfileChanges(event.from, event.to);
+                        if (detailsContent === 'No changes detected') {
+                            detailsContent = event.to._id ? 'User was updated' : 'File was updated';
+                        }
+                    }
+                } else if (event.details) {
+                    // Regular event with details
+                    detailsContent = typeof event.details === 'string' 
+                        ? event.details 
+                        : JSON.stringify(event.details, null, 2);
+                } else if (event.event_type) {
+                    // Generic event type description
+                    if (event.event_type.toLowerCase().includes('create')) {
+                        const objType = event.event_type.split('_')[0] || 'item';
+                        detailsContent = `New ${objType} was created`;
+                    } else if (event.event_type.toLowerCase().includes('update')) {
+                        detailsContent = `${event.event_type.split('_')[0] || 'Item'} was updated`;
+                    } else {
+                        detailsContent = 'Action was performed';
+                    }
+                } else {
+                    detailsContent = 'N/A';
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(event.timestamp || `${event.date} ${event.time}`)}</td>
+                    <td>${user}</td>
+                    <td class="${severityClass}">${severityText}</td>
+                    <td><div class="details-container">${detailsContent}</div></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update page info
+            elements.pageInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${allEvents.length} events`;
+        }
+
+        // Helper function to format profile changes
+        function formatProfileChanges(fromData, toData) {
+            let changes = [];
+            
+            // Check if this is a creation event (no from data or empty from data)
+            if (!fromData || Object.keys(fromData).length === 0) {
+                const objType = toData._id ? 'user' : 'file';
+                return `New ${objType} was created: ${JSON.stringify(toData, null, 2)}`;
+            }
+            
+            // Compare each field between from and to
+            for (const key in fromData) {
+                if (key === '_id' || key === 'hashed_pass' || key === 'past_passwords') continue;
+                
+                const fromValue = fromData[key];
+                const toValue = toData[key];
+                
+                if (JSON.stringify(fromValue) !== JSON.stringify(toValue)) {
+                    changes.push(`
+                        <div class="change-item">
+                            <strong>${key}:</strong>
+                            <div class="change-from">${formatValue(fromValue)}</div>
+                            <div class="change-to">${formatValue(toValue)}</div>
+                        </div>
+                    `);
+                }
+            }
+            
+            return changes.length > 0 
+                ? `<div class="profile-changes">${changes.join('')}</div>`
+                : 'No changes detected';
+        }
+
+        // Helper function to format values for display
+        function formatValue(value) {
+            if (value === null || value === undefined) return 'N/A';
+            if (typeof value === 'object') return JSON.stringify(value, null, 2);
+            return value.toString();
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            elements.pageButtons.innerHTML = '';
+            
+            // Previous button
+            elements.prevPageBtn.disabled = currentPage === 1;
+            
+            // Page buttons
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            // Adjust if we're at the end
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `btn btn-page ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    updatePagination();
+                    renderEvents();
+                };
+                elements.pageButtons.appendChild(pageBtn);
+            }
+            
+            // Next button
+            elements.nextPageBtn.disabled = currentPage === totalPages;
+        }
+
+        // Handle fetch errors
+        function handleFetchError(error) {
+            console.error('API Error:', error);
+            let errorMsg = error.message || 'Failed to fetch event data';
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMsg = "Cannot connect to the server. Please check your internet connection.";
+            }
+
+            showError(errorMsg);
+            elements.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align: center; color: red;">
+                        ${errorMsg}
+                        <br>
+                        <button class="btn btn-mainmenu" onclick="fetchEvents()">Retry Now</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Helper functions
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            elements.successMessage.textContent = message;
+            elements.successMessage.style.display = 'block';
+            setTimeout(() => elements.successMessage.style.display = 'none', 3000);
+        }
+
+        function hideAllMessages() {
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
+        }
+
+        // Initialize the page
+        window.onload = () => {
+            displayLoggedInUser();
+            
+            // Set up pagination button handlers
+            elements.prevPageBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updatePagination();
+                    renderEvents();
+                }
+            };
+            
+            elements.nextPageBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updatePagination();
+                    renderEvents();
+                }
+            };
+            
+            fetchEvents();
+        };
+    </script>
+</body>
+</html>

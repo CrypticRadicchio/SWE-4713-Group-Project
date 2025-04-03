@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Entry Details | Fast Finance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            height: 30px;
+            margin-right: 15px;
+        }
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .page-title {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-back {
+            background: #6c757d;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #d9534f;
+            padding: 15px;
+            background: #ffeeee;
+            border: 1px solid #ffdddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .debit {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+        .credit {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .total-row {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .journal-info {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .journal-info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .journal-info-label {
+            font-weight: bold;
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <div class="company-name">Fast Finance</div>
+        </div>
+        <div class="user-info">
+            <span id="username">User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Journal Entry Details</h1>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        
+        <div class="controls">
+            <button id="refreshBtn" class="btn">Refresh Data</button>
+            <div id="status">Loading journal details...</div>
+        </div>
+        
+        <div id="journalInfoContainer" class="journal-info" style="display: none;"></div>
+        <div id="tableContainer" class="loading">Loading transactions...</div>
+
+        <div style="margin-top: 30px; text-align: center;">
+            <button class="btn btn-back" onclick="window.history.back()">Back to Journals</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com';
+        let currentJournalId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSelectedJournal();
+            fetchJournalDetails();
+            document.getElementById('refreshBtn').addEventListener('click', fetchJournalDetails);
+        });
+
+        function loadSelectedJournal() {
+            currentJournalId = localStorage.getItem('selectedJournal');
+            if (!currentJournalId) {
+                showError('No journal selected');
+                setTimeout(() => window.location.href = 'Admin-Journal-Pending.html', 2000);
+            }
+        }
+
+        async function fetchJournalDetails() {
+            try {
+                // GET journal details
+                const journalResponse = await fetch(`${API_BASE_URL}/journal/get_one?journal_id=${encodeURIComponent(currentJournalId)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!journalResponse.ok) throw new Error('Failed to load journal');
+                const journalData = await journalResponse.json();
+                if (!journalData?.journal_id) throw new Error('Invalid journal data');
+                
+                displayJournalInfo(journalData);
+                
+                // GET transactions
+                const transactionsResponse = await fetch(`${API_BASE_URL}/ledger/transactions?post_reference=${encodeURIComponent(currentJournalId)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!transactionsResponse.ok) throw new Error('Failed to load transactions');
+                const transactions = await transactionsResponse.json();
+                displayTransactions(transactions);
+                
+                document.getElementById('status').textContent = `Journal loaded at ${new Date().toLocaleTimeString()}`;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function displayJournalInfo(data) {
+            const container = document.getElementById('journalInfoContainer');
+            container.innerHTML = `
+                <h3>Journal: ${data.journal_id}</h3>
+                <div class="journal-info-row">
+                    <div class="journal-info-label">Journal ID:</div>
+                    <div>${data.journal_id}</div>
+                </div>
+                <div class="journal-info-row">
+                    <div class="journal-info-label">Date:</div>
+                    <div>${new Date(data.date).toLocaleDateString()}</div>
+                </div>
+                <div class="journal-info-row">
+                    <div class="journal-info-label">Description:</div>
+                    <div>${data.description || 'None'}</div>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+
+        function displayTransactions(transactions) {
+            const container = document.getElementById('tableContainer');
+            if (!transactions?.length) {
+                container.innerHTML = '<div class="error">No transactions found</div>';
+                return;
+            }
+
+            let debits = 0;
+            let credits = 0;
+            let html = `
+                <table>
+                    <thead><tr><th>Account</th><th>Debit</th><th>Credit</th><th>Description</th></tr></thead>
+                    <tbody>
+            `;
+
+            transactions.forEach(t => {
+                const amount = parseFloat(t.balance) || 0;
+                if (t.side?.toLowerCase() === 'debit') {
+                    debits += amount;
+                    html += `<tr>
+                        <td>${t.account_name || 'Unknown'}</td>
+                        <td class="debit">${amount.toFixed(2)}</td>
+                        <td></td>
+                        <td>${t.description || ''}</td>
+                    </tr>`;
+                } else {
+                    credits += amount;
+                    html += `<tr>
+                        <td>${t.account_name || 'Unknown'}</td>
+                        <td></td>
+                        <td class="credit">${amount.toFixed(2)}</td>
+                        <td>${t.description || ''}</td>
+                    </tr>`;
+                }
+            });
+
+            html += `
+                    <tr class="total-row">
+                        <td>Total</td>
+                        <td class="debit">${debits.toFixed(2)}</td>
+                        <td class="credit">${credits.toFixed(2)}</td>
+                        <td></td>
+                    </tr>
+                </tbody></table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function showError(message) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
