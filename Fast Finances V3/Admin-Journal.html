@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Finance Transactions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            height: 30px;
+            margin-right: 15px;
+        }
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-badge {
+            height: 24px;
+            width: 24px;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .username {
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .page-title {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0069d9;
+        }
+        .btn-back {
+            background: #6c757d;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+        }
+        .button-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #d9534f;
+            padding: 15px;
+            background: #ffeeee;
+            border: 1px solid #ffdddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #successMessage {
+            color: #155724;
+            padding: 15px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .debit {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+        .credit {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .credit-account {
+            padding-left: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        #status {
+            color: #666;
+            font-style: italic;
+        }
+        .total-row {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .reference-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .reference-link:hover {
+            text-decoration: underline;
+        }
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .search-input {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex-grow: 1;
+            max-width: 300px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 5px;
+        }
+        .page-btn {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .page-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .page-btn:hover:not(.active) {
+            background: #f0f0f0;
+        }
+        .pagination-info {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <div class="company-name">Fast Finance</div>
+        </div>
+        <div class="user-info">
+            <img src="admin.png" alt="Admin" class="admin-badge" id="adminBadge">
+            <span class="username" id="username">User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Journal</h1>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        <div id="successMessage"></div>
+        
+        <div class="controls">
+            <button id="refreshBtn" class="btn">Refresh Data</button>
+            <div id="status">Ready to fetch data</div>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search all fields...">
+            <button id="searchBtn" class="btn">Search</button>
+        </div>
+        
+        <div id="paginationTop" class="pagination"></div>
+        <div id="paginationInfoTop" class="pagination-info"></div>
+        
+        <div id="tableContainer">
+            <div class="loading">Loading transactions...</div>
+        </div>
+        
+        <div id="paginationInfoBottom" class="pagination-info"></div>
+        <div id="paginationBottom" class="pagination"></div>
+
+        <div class="button-container">
+            <button class="btn" onclick="window.location.href='Admin-Dashboard.html'">Back</button>
+            <button class="btn" onclick="window.location.href='Admin-Dashboard.html'">Dashboard</button>
+            <button class="btn" onclick="window.location.href='Admin-Journal-Create.html'">New Journal</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com';
+        const ITEMS_PER_PAGE = 20;
+        let currentUser = null;
+        let currentData = null;
+        let filteredData = null;
+        let currentPage = 1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                loadCurrentUser();
+                fetchTransactions();
+                document.getElementById('refreshBtn').addEventListener('click', fetchTransactions);
+                document.getElementById('searchBtn').addEventListener('click', applySearch);
+                document.getElementById('searchInput').addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        applySearch();
+                    }
+                });
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        function loadCurrentUser() {
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = JSON.parse(userData);
+            document.getElementById('username').textContent = currentUser.name || currentUser.username || "User";
+            document.getElementById('adminBadge').style.display = 
+                (currentUser.role && currentUser.role.toLowerCase() === 'admin') ? 'block' : 'none';
+        }
+
+        async function fetchTransactions() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = "Fetching data...";
+            document.getElementById('tableContainer').innerHTML = '<div class="loading">Loading transactions...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/ledger/transactions`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                currentData = await response.json();
+                filteredData = currentData;
+                currentPage = 1;
+                displayTransactions();
+                statusDiv.textContent = `Data loaded successfully at ${new Date().toLocaleString()}`;
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error loading transactions: ${error.message}`);
+                statusDiv.textContent = "Error loading data";
+            }
+        }
+
+        function applySearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredData = currentData;
+            } else {
+                filteredData = currentData.filter(transaction => {
+                    return Object.values(transaction).some(value => 
+                        String(value).toLowerCase().includes(searchTerm));
+                });
+            }
+            
+            currentPage = 1;
+            displayTransactions();
+        }
+
+        function displayTransactions() {
+            const transactions = Array.isArray(filteredData) ? filteredData : (filteredData?.transactions || []);
+            const tableContainer = document.getElementById('tableContainer');
+            
+            if (transactions.length === 0) {
+                tableContainer.innerHTML = '<div class="error">No transactions found</div>';
+                document.getElementById('paginationTop').innerHTML = '';
+                document.getElementById('paginationBottom').innerHTML = '';
+                document.getElementById('paginationInfoTop').innerHTML = '';
+                document.getElementById('paginationInfoBottom').innerHTML = '';
+                return;
+            }
+
+            transactions.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+            // Pagination logic
+            const totalPages = Math.ceil(transactions.length / ITEMS_PER_PAGE);
+            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIdx = startIdx + ITEMS_PER_PAGE;
+            const paginatedTransactions = transactions.slice(startIdx, endIdx);
+
+            // Create table
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
+            ['Date', 'Account', 'Debit', 'Credit', 'Description', 'Post Ref'].forEach(text => {
+                const th = document.createElement('th');
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            let totalDebits = 0;
+            let totalCredits = 0;
+
+            paginatedTransactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                const side = String(transaction.side || '').toLowerCase();
+                const balance = parseFloat(transaction.balance) || 0;
+
+                // Date
+                const dateCell = document.createElement('td');
+                dateCell.textContent = transaction.date || 'N/A';
+                row.appendChild(dateCell);
+
+                // Account
+                const accountCell = document.createElement('td');
+                accountCell.textContent = transaction.account_name || 'Unknown Account';
+                if (side === 'credit') accountCell.classList.add('credit-account');
+                row.appendChild(accountCell);
+
+                // Debit/Credit
+                const debitCell = document.createElement('td');
+                const creditCell = document.createElement('td');
+
+                if (side === 'debit') {
+                    debitCell.textContent = balance.toFixed(2);
+                    debitCell.className = 'debit';
+                    totalDebits += balance;
+                } else if (side === 'credit') {
+                    creditCell.textContent = balance.toFixed(2);
+                    creditCell.className = 'credit';
+                    totalCredits += balance;
+                }
+
+                row.appendChild(debitCell);
+                row.appendChild(creditCell);
+
+                // Description
+                const descCell = document.createElement('td');
+                descCell.textContent = transaction.description || '';
+                row.appendChild(descCell);
+
+                // Post Ref
+                const postRefCell = document.createElement('td');
+                if (transaction.post_reference) {
+                    const refLink = document.createElement('a');
+                    refLink.className = 'reference-link';
+                    refLink.textContent = transaction.post_reference;
+                    refLink.onclick = () => handlePostRefClick(transaction);
+                    postRefCell.appendChild(refLink);
+                }
+                row.appendChild(postRefCell);
+
+                tbody.appendChild(row);
+            });
+
+            // Totals row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td></td>
+                <td class="debit">${totalDebits.toFixed(2)}</td>
+                <td class="credit">${totalCredits.toFixed(2)}</td>
+                <td></td>
+                <td></td>
+            `;
+            tbody.appendChild(totalRow);
+
+            table.appendChild(tbody);
+            tableContainer.innerHTML = '';
+            tableContainer.appendChild(table);
+
+            // Update pagination
+            updatePagination(totalPages);
+            
+            // Update pagination info
+            const paginationInfo = `Showing ${startIdx + 1}-${Math.min(endIdx, transactions.length)} of ${transactions.length} entries`;
+            document.getElementById('paginationInfoTop').textContent = paginationInfo;
+            document.getElementById('paginationInfoBottom').textContent = paginationInfo;
+        }
+
+        function updatePagination(totalPages) {
+            const paginationTop = document.getElementById('paginationTop');
+            const paginationBottom = document.getElementById('paginationBottom');
+            
+            paginationTop.innerHTML = '';
+            paginationBottom.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Previous button
+            const prevBtnTop = createPageButton('«', currentPage > 1 ? currentPage - 1 : 1);
+            const prevBtnBottom = createPageButton('«', currentPage > 1 ? currentPage - 1 : 1);
+            paginationTop.appendChild(prevBtnTop);
+            paginationBottom.appendChild(prevBtnBottom);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtnTop = createPageButton(i, i);
+                const pageBtnBottom = createPageButton(i, i);
+                if (i === currentPage) {
+                    pageBtnTop.classList.add('active');
+                    pageBtnBottom.classList.add('active');
+                }
+                paginationTop.appendChild(pageBtnTop);
+                paginationBottom.appendChild(pageBtnBottom);
+            }
+            
+            // Next button
+            const nextBtnTop = createPageButton('»', currentPage < totalPages ? currentPage + 1 : totalPages);
+            const nextBtnBottom = createPageButton('»', currentPage < totalPages ? currentPage + 1 : totalPages);
+            paginationTop.appendChild(nextBtnTop);
+            paginationBottom.appendChild(nextBtnBottom);
+        }
+        
+        function createPageButton(text, page) {
+            const btn = document.createElement('button');
+            btn.className = 'page-btn';
+            btn.textContent = text;
+            btn.onclick = () => {
+                currentPage = page;
+                displayTransactions();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            };
+            return btn;
+        }
+
+        function handlePostRefClick(transaction) {
+            const accountData = {
+                post_reference: transaction.post_reference,
+                account_name: transaction.account_name,
+                balance: transaction.balance,
+                side: transaction.side
+            };
+            
+            localStorage.setItem('selectedAccount', JSON.stringify(accountData));
+            window.location.href = 'Admin-Journal-Ledger-Connection.html';
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => errorElement.style.display = 'none', 5000);
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('selectedAccount');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

@@ -191,7 +191,7 @@
         </div>
         <div class="user-info">
             <img src="Accountant.png" alt="Admin Profile">
-            <span id="username">Employee</span>
+            <span id="username">Admin</span>
             <button class="btn btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -244,12 +244,13 @@
         </table>
 
         <div class="button-container">
-           
+            <button class="btn btn-add" onclick="addAccount()">Add Account</button>
         </div>
 
         <div class="separate-buttons">
             <button class="btn btn-back" onclick="window.location.href='Employee-Dashboard.html'">Back</button>
             <button class="btn btn-main-menu" onclick="window.location.href='Employee-Dashboard.html'">Main Menu</button>
+            <button class="btn btn-main-menu" onclick="window.location.href='Employee-Email-Prompt.html'">Email</button>
         </div>
     </div>
 
@@ -316,7 +317,7 @@
                         <div class="action-buttons">
                             <button class="btn btn-ledger" onclick="viewAccountLedger('${account.account_id}')">Ledger</button>
                             <button class="btn btn-view" onclick="viewAccount('${account.account_id}')">View</button>
-                          
+                           
                         </div>
                     </td>
                 `;
@@ -377,7 +378,7 @@
             const account = accountsData.find(acc => acc.account_id == accountId);
             if (account) {
                 localStorage.setItem('selectedAccount', JSON.stringify(account));
-                window.location.href = 'Employee-Accountant-Ledger.html';
+                window.location.href = 'Employee-Ledger-Account.html';
             } else {
                 alert('Account not found!');
             }
@@ -397,13 +398,16 @@
             const account = accountsData.find(acc => acc.account_id == accountId);
             if (account) {
                 localStorage.setItem("selectedAccount", JSON.stringify(account));
-                window.location.href = "Admin_Accountants_Edit.html";
+                window.location.href = "Employee-Accountants-Edit.html";
             } else {
                 alert('Account not found!');
             }
         }
 
-       
+        function addAccount() {
+            window.location.href = 'Employee-Accountants-Management.html';
+        }
+
         function displayLoggedInUser() {
             try {
                 // First try sessionStorage
@@ -411,7 +415,7 @@
                 if (sessionUser) {
                     const displayName = sessionUser.first_name 
                         ? `${sessionUser.first_name} ${sessionUser.last_name || ''}`.trim()
-                        : sessionUser.username || sessionUser.id || "Employee";
+                        : sessionUser.username || sessionUser.id || "Administrator";
                     document.getElementById('username').textContent = displayName;
                     
                     if (sessionUser.profile_pic) {
@@ -425,7 +429,7 @@
                 if (localUser) {
                     const displayName = localUser.first_name 
                         ? `${localUser.first_name} ${localUser.last_name || ''}`.trim()
-                        : localUser.username || localUser.id || "Employee";
+                        : localUser.username || localUser.id || "Administrator";
                     document.getElementById('username').textContent = displayName;
                     
                     if (localUser.profile_pic) {
@@ -435,7 +439,7 @@
                 }
             } catch (error) {
                 console.error('Error loading user data:', error);
-                document.getElementById('username').textContent = "Employee";
+                document.getElementById('username').textContent = "Administrator";
             }
         }
 

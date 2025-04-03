@@ -250,6 +250,7 @@
         <div class="separate-buttons">
             <button class="btn btn-back" onclick="window.location.href='Admin-Dashboard.html'">Back</button>
             <button class="btn btn-main-menu" onclick="window.location.href='Admin-Dashboard.html'">Main Menu</button>
+            <button class="btn btn-main-menu" onclick="window.location.href='Admin-Email-Prompt.html'">Email</button>
         </div>
     </div>
 
@@ -377,7 +378,7 @@
             const account = accountsData.find(acc => acc.account_id == accountId);
             if (account) {
                 localStorage.setItem('selectedAccount', JSON.stringify(account));
-                window.location.href = 'Admin-Current-Ledger-Roster.html';
+                window.location.href = 'Admin-Ledger-Account.html';
             } else {
                 alert('Account not found!');
             }
