@@ -227,6 +227,12 @@
             
             if (!isValid) return;
             
+            // Calculate expiration date (90 days from now)
+            const today = new Date();
+            const expiryDate = new Date();
+            expiryDate.setDate(today.getDate() + 90);
+            const formattedExpiry = expiryDate.toISOString().split('T')[0];
+            
             // Prepare user data in API format
             const userData = {
                 email: formData.get('email'),
@@ -235,6 +241,7 @@
                 dob: formData.get('dob'),
                 hashed_pass: formData.get('password'),
                 role: formData.get('role'),
+                password_expiry: formattedExpiry, // Automatically set to 90 days from now
                 security_answers: [
                     formData.get('security_answer_1').trim(),
                     formData.get('security_answer_2').trim(),
@@ -352,4 +359,3 @@
     </script>
 </body>
 </html>
-       

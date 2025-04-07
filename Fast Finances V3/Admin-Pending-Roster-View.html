@@ -269,6 +269,22 @@
             color: #f39c12;
             font-weight: bold;
         }
+        
+        /* Password expiration styling */
+        .expiration-soon {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        
+        .expiration-past {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .expiration-good {
+            color: #27ae60;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -310,7 +326,7 @@
                     <th>Email</th>
                     <th>Role</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Password Expires</th>
                 </tr>
             </thead>
             <tbody id="employee-table-body">
@@ -356,6 +372,23 @@
             });
         }
 
+        // Get password expiration status and styling class - UPDATED TO USE Password_Expiration
+        function getPasswordExpirationStatus(expiryDate) {
+            if (!expiryDate) return { text: 'Never', class: 'expiration-good' };
+            
+            const now = new Date();
+            const expiry = new Date(expiryDate);
+            const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return { text: `${formatDate(expiryDate)} (Expired)`, class: 'expiration-past' };
+            } else if (diffDays <= 7) {
+                return { text: `${formatDate(expiryDate)} (${diffDays} days)`, class: 'expiration-soon' };
+            } else {
+                return { text: formatDate(expiryDate), class: 'expiration-good' };
+            }
+        }
+
         // DOM Elements
         const elements = {
             spinner: document.getElementById('loading-spinner'),
@@ -387,7 +420,7 @@
             }
         }
 
-        // Fetch pending users from API
+        // Fetch pending users from API - UPDATED TO HANDLE Password_Expiration
         async function fetchPendingUsers() {
             showLoading();
             hideAllMessages();
@@ -408,6 +441,12 @@
                 const data = await response.json();
                 pendingUsers = Array.isArray(data) ? data : (data.users || []);
                 
+                // Ensure Password_Expiration field is properly mapped
+                pendingUsers = pendingUsers.map(user => ({
+                    ...user,
+                    Password_Expiration: user.Password_Expiration || user.password_expiration || null
+                }));
+                
                 if (pendingUsers.length === 0) {
                     showWarning("No pending users found");
                     renderEmptyTable();
@@ -422,12 +461,14 @@
             }
         }
 
-        // Render user table
+        // Render user table - UPDATED TO USE Password_Expiration
         function renderUserTable(users) {
             const tableBody = document.getElementById('employee-table-body');
             tableBody.innerHTML = '';
 
             users.forEach(user => {
+                const expiration = getPasswordExpirationStatus(user.Password_Expiration);
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><input type="checkbox" class="user-checkbox" data-id="${user.user_id}" data-email="${user.email || ''}"></td>
@@ -436,9 +477,7 @@
                     <td>${user.email || 'N/A'}</td>
                     <td>${user.role || 'employee'}</td>
                     <td class="status-pending">Pending</td>
-                    <td>
-                        <button class="btn btn-modify" onclick="viewUserDetails('${user.user_id}')">View</button>
-                    </td>
+                    <td class="${expiration.class}">${expiration.text}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -485,7 +524,7 @@
             return selectedUsers;
         }
 
-        // Approve selected users with user_id generation
+        // Approve selected users with user_id generation - UPDATED FOR Password_Expiration
         async function approveSelectedUsers() {
             const selectedUsers = getSelectedUsers();
             if (!selectedUsers) return;
@@ -498,12 +537,8 @@
                 
                 for (const user of selectedUsers) {
                     try {
-                        console.log(`Starting approval for user ${user.user_id} (${user.email})`);
-                        
                         // 1. Fetch complete user data from pending endpoint
                         const fetchUrl = `${API_BASE_URL}/users/new_user/fetch_one?email=${encodeURIComponent(user.email)}`;
-                        console.log(`Fetching user data from: ${fetchUrl}`);
-                        
                         const fetchResponse = await fetch(fetchUrl, {
                             method: 'GET',
                             headers: {
@@ -513,16 +548,13 @@
                         });
 
                         if (!fetchResponse.ok) {
-                            const errorData = await fetchResponse.json().catch(() => ({}));
-                            throw new Error(errorData.message || `Failed to fetch user data (Status: ${fetchResponse.status})`);
+                            throw new Error(`Failed to fetch user data (Status: ${fetchResponse.status})`);
                         }
 
                         const pendingUserData = await fetchResponse.json();
-                        console.log('Retrieved pending user data:', pendingUserData);
 
                         // 2. Generate the new user_id
                         const newUserId = generateUserId(pendingUserData.first_name, pendingUserData.last_name);
-                        console.log(`Generated new user_id: ${newUserId}`);
 
                         // 3. Format the data for the main user creation endpoint
                         const userCreationData = {
@@ -538,10 +570,9 @@
                                 pendingUserData.security_answer_2 || 'default2',
                                 pendingUserData.security_answer_3 || 'default3'
                             ],
-                            is_active: true
+                            is_active: true,
+                            password_expiry: pendingUserData.Password_Expiration || null
                         };
-
-                        console.log('Formatted user creation data:', userCreationData);
 
                         // 4. Create the user in the main system
                         const createResponse = await fetch(`${API_BASE_URL}/users?user_id=${user.user_id}`, {
@@ -554,24 +585,8 @@
                         });
                         
                         if (!createResponse.ok) {
-                            const errorData = await createResponse.json().catch(() => ({}));
-                            console.error('Create user error details:', {
-                                status: createResponse.status,
-                                errorData: errorData,
-                                sentData: userCreationData
-                            });
-                            
-                            if (createResponse.status === 422) {
-                                const errorDetails = Array.isArray(errorData.detail) 
-                                    ? errorData.detail.map(e => `${e.loc ? e.loc.join('.') + ' ' : ''}${e.msg}`).join('; ')
-                                    : errorData.detail || errorData.message;
-                                throw new Error(`Validation failed: ${errorDetails}`);
-                            }
-                            throw new Error(errorData.message || `Failed to create user (Status: ${createResponse.status})`);
+                            throw new Error(`Failed to create user (Status: ${createResponse.status})`);
                         }
-
-                        const createdUser = await createResponse.json();
-                        console.log('User created successfully:', createdUser);
 
                         // 5. Remove from pending list
                         const deleteResponse = await fetch(
@@ -595,7 +610,6 @@
                             message: `User approved successfully with ID: ${newUserId}`
                         });
                     } catch (error) {
-                        console.error(`Error approving user ${user.user_id}:`, error);
                         approvalResults.push({
                             user_id: user.user_id,
                             status: 'error',
@@ -612,18 +626,13 @@
                 const failedApprovals = approvalResults.filter(r => r.status === 'error');
                 
                 if (failedApprovals.length === 0) {
-                    const successMessage = successfulApprovals.length === 1
-                        ? `Successfully approved user with ID: ${successfulApprovals[0].user_id}`
-                        : `Successfully approved ${successfulApprovals.length} users with IDs: ${successfulApprovals.map(u => u.user_id).join(', ')}`;
-                    showSuccess(successMessage);
+                    showSuccess(`Successfully approved ${successfulApprovals.length} user(s)`);
                 } else if (successfulApprovals.length === 0) {
                     showError(`Failed to approve any users. Errors: ${failedApprovals.map(f => f.message).join('; ')}`);
                 } else {
-                    const successIds = successfulApprovals.map(u => u.user_id).join(', ');
-                    showWarning(`Approved users with IDs: ${successIds}, but failed to approve ${failedApprovals.length} user(s)`);
+                    showWarning(`Approved ${successfulApprovals.length} user(s), but failed to approve ${failedApprovals.length} user(s)`);
                 }
             } catch (error) {
-                console.error('General approval error:', error);
                 handleFetchError(error);
             } finally {
                 hideLoading();
@@ -662,15 +671,6 @@
                 handleFetchError(error);
             } finally {
                 hideLoading();
-            }
-        }
-
-        // View user details
-        function viewUserDetails(userId) {
-            const user = pendingUsers.find(u => u.user_id === userId);
-            if (user) {
-                sessionStorage.setItem("selectedPendingUser", JSON.stringify(user));
-                window.location.href = 'Admin_View_Pending_User.html';
             }
         }
 

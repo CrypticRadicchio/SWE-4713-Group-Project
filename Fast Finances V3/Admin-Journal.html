@@ -176,6 +176,8 @@
             margin-bottom: 20px;
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .search-input {
             padding: 8px 15px;
@@ -183,6 +185,16 @@
             border-radius: 4px;
             flex-grow: 1;
             max-width: 300px;
+        }
+        .date-range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .date-input {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         .pagination {
             display: flex;
@@ -210,6 +222,27 @@
             color: #666;
             margin: 10px 0;
         }
+        .search-highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+        .filter-btn {
+            background: #28a745;
+        }
+        .filter-btn:hover {
+            background: #218838;
+        }
+        .reset-btn {
+            background: #6c757d;
+        }
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+        /* New styles for money formatting */
+        .money-cell {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
     </style>
 </head>
 <body>
@@ -226,7 +259,7 @@
     </div>
 
     <div class="container">
-        <h1 class="page-title">Journal</h1>
+        <h1 class="page-title">General Journal</h1>
         
         <div id="errorMessage" class="error" style="display: none;"></div>
         <div id="successMessage"></div>
@@ -238,7 +271,17 @@
         
         <div class="search-container">
             <input type="text" id="searchInput" class="search-input" placeholder="Search all fields...">
-            <button id="searchBtn" class="btn">Search</button>
+            
+            <div class="date-range-container">
+                <label for="startDate">From:</label>
+                <input type="date" id="startDate" class="date-input">
+                
+                <label for="endDate">To:</label>
+                <input type="date" id="endDate" class="date-input">
+                
+                <button id="filterBtn" class="btn filter-btn">Filter Dates</button>
+                <button id="resetBtn" class="btn reset-btn">Reset</button>
+            </div>
         </div>
         
         <div id="paginationTop" class="pagination"></div>
@@ -265,17 +308,40 @@
         let currentData = null;
         let filteredData = null;
         let currentPage = 1;
+        let searchTimeout = null;
+
+        // Helper function to format money with commas
+        function formatMoney(amount) {
+            if (isNaN(amount)) return '0.00';
+            return parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             try {
                 loadCurrentUser();
                 fetchTransactions();
+                
+                // Set default dates (today)
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('startDate').value = today;
+                document.getElementById('endDate').value = today;
+                
+                // Event listeners
                 document.getElementById('refreshBtn').addEventListener('click', fetchTransactions);
-                document.getElementById('searchBtn').addEventListener('click', applySearch);
-                document.getElementById('searchInput').addEventListener('keyup', function(e) {
-                    if (e.key === 'Enter') {
-                        applySearch();
+                document.getElementById('filterBtn').addEventListener('click', applyDateFilter);
+                document.getElementById('resetBtn').addEventListener('click', resetFilters);
+                
+                // Real-time search implementation
+                document.getElementById('searchInput').addEventListener('input', function() {
+                    // Clear any existing timeout
+                    if (searchTimeout) {
+                        clearTimeout(searchTimeout);
                     }
+                    
+                    // Set a new timeout to apply the search after a short delay (300ms)
+                    searchTimeout = setTimeout(() => {
+                        applySearch();
+                    }, 300);
                 });
             } catch (error) {
                 showError(error.message);
@@ -329,6 +395,84 @@
             
             currentPage = 1;
             displayTransactions();
+            highlightSearchResults(searchTerm);
+        }
+
+        function applyDateFilter() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                showError("Please select both start and end dates");
+                return;
+            }
+            
+            if (startDate > endDate) {
+                showError("Start date cannot be after end date");
+                return;
+            }
+            
+            filteredData = currentData.filter(transaction => {
+                const transactionDate = transaction.date || '';
+                return transactionDate >= startDate && transactionDate <= endDate;
+            });
+            
+            currentPage = 1;
+            displayTransactions();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
+            
+            filteredData = currentData;
+            currentPage = 1;
+            displayTransactions();
+        }
+
+        function highlightSearchResults(searchTerm) {
+            if (!searchTerm) return;
+            
+            const rows = document.querySelectorAll('#tableContainer tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                let rowContainsMatch = false;
+                
+                cells.forEach(cell => {
+                    const cellText = cell.textContent.toLowerCase();
+                    const index = cellText.indexOf(searchTerm);
+                    
+                    if (index !== -1) {
+                        rowContainsMatch = true;
+                        const originalText = cell.textContent;
+                        let highlightedText = '';
+                        let lastIndex = 0;
+                        
+                        // Find all occurrences of the search term
+                        let currentIndex = cellText.indexOf(searchTerm);
+                        while (currentIndex !== -1) {
+                            // Add text before the match
+                            highlightedText += originalText.substring(lastIndex, currentIndex);
+                            // Add highlighted match
+                            highlightedText += `<span class="search-highlight">${originalText.substring(currentIndex, currentIndex + searchTerm.length)}</span>`;
+                            lastIndex = currentIndex + searchTerm.length;
+                            currentIndex = cellText.indexOf(searchTerm, lastIndex);
+                        }
+                        // Add remaining text
+                        highlightedText += originalText.substring(lastIndex);
+                        
+                        cell.innerHTML = highlightedText;
+                    }
+                });
+                
+                // Highlight the entire row if it contains a match
+                if (rowContainsMatch) {
+                    row.style.backgroundColor = '#fffde7';
+                } else {
+                    row.style.backgroundColor = '';
+                }
+            });
         }
 
         function displayTransactions() {
@@ -360,6 +504,9 @@
             ['Date', 'Account', 'Debit', 'Credit', 'Description', 'Post Ref'].forEach(text => {
                 const th = document.createElement('th');
                 th.textContent = text;
+                if (text === 'Debit' || text === 'Credit') {
+                    th.style.textAlign = 'right';
+                }
                 headerRow.appendChild(th);
             });
 
@@ -389,14 +536,16 @@
                 // Debit/Credit
                 const debitCell = document.createElement('td');
                 const creditCell = document.createElement('td');
+                debitCell.className = 'money-cell';
+                creditCell.className = 'money-cell';
 
                 if (side === 'debit') {
-                    debitCell.textContent = balance.toFixed(2);
-                    debitCell.className = 'debit';
+                    debitCell.textContent = formatMoney(balance);
+                    debitCell.classList.add('debit');
                     totalDebits += balance;
                 } else if (side === 'credit') {
-                    creditCell.textContent = balance.toFixed(2);
-                    creditCell.className = 'credit';
+                    creditCell.textContent = formatMoney(balance);
+                    creditCell.classList.add('credit');
                     totalCredits += balance;
                 }
 
@@ -425,14 +574,26 @@
             // Totals row
             const totalRow = document.createElement('tr');
             totalRow.className = 'total-row';
+            
+            const totalDebitCell = document.createElement('td');
+            totalDebitCell.className = 'money-cell debit';
+            totalDebitCell.textContent = formatMoney(totalDebits);
+            
+            const totalCreditCell = document.createElement('td');
+            totalCreditCell.className = 'money-cell credit';
+            totalCreditCell.textContent = formatMoney(totalCredits);
+            
             totalRow.innerHTML = `
                 <td>Total</td>
                 <td></td>
-                <td class="debit">${totalDebits.toFixed(2)}</td>
-                <td class="credit">${totalCredits.toFixed(2)}</td>
+            `;
+            totalRow.appendChild(totalDebitCell);
+            totalRow.appendChild(totalCreditCell);
+            totalRow.innerHTML += `
                 <td></td>
                 <td></td>
             `;
+            
             tbody.appendChild(totalRow);
 
             table.appendChild(tbody);

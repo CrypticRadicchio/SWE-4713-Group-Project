@@ -247,44 +247,53 @@
             font-weight: bold;
         }
 
-        /* New styles for profile changes */
-        .details-container {
-            max-height: 150px;
-            overflow-y: auto;
-            font-size: 13px;
-            padding: 4px;
+        /* New styles for change tables */
+        .changes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+            font-size: 12px;
         }
 
-        .profile-changes {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+        .changes-table th {
+            background-color: #e9ecef;
+            padding: 6px 8px;
+            text-align: left;
         }
 
-        .change-item {
-            padding: 4px;
-            border-left: 2px solid #007bff;
+        .changes-table td {
+            padding: 6px 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .field-name {
+            font-weight: bold;
+            color: #495057;
+            white-space: nowrap;
+        }
+
+        .old-value {
+            color: #dc3545;
+            text-decoration: line-through;
+            background-color: #fff5f5;
+        }
+
+        .new-value {
+            color: #28a745;
+            font-weight: bold;
             background-color: #f8f9fa;
         }
 
-        .change-from {
-            color: #dc3545;
-            text-decoration: line-through;
-            margin-bottom: 2px;
-            font-size: 12px;
-        }
-
-        .change-to {
-            color: #28a745;
-            font-weight: bold;
-            font-size: 12px;
-        }
-
-        .change-item strong {
-            display: block;
-            margin-bottom: 3px;
+        .no-change {
             color: #6c757d;
-            font-size: 12px;
+            font-style: italic;
+        }
+
+        .details-container {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 13px;
+            padding: 4px;
         }
 
         /* Pagination controls */
@@ -510,31 +519,28 @@
                     if (Object.keys(event.from).length === 0) {
                         // Creation event
                         const objType = event.to._id ? 'user' : 'file';
-                        detailsContent = `New ${objType} was created: ${JSON.stringify(event.to, null, 2)}`;
+                        detailsContent = `<strong>New ${objType} created:</strong><br>${formatObjectAsTable(event.to)}`;
                     } else {
                         // Update event
-                        detailsContent = formatProfileChanges(event.from, event.to);
-                        if (detailsContent === 'No changes detected') {
-                            detailsContent = event.to._id ? 'User was updated' : 'File was updated';
-                        }
+                        detailsContent = formatChangesAsTable(event.from, event.to);
                     }
                 } else if (event.details) {
                     // Regular event with details
                     detailsContent = typeof event.details === 'string' 
                         ? event.details 
-                        : JSON.stringify(event.details, null, 2);
+                        : `<strong>Event Details:</strong><br>${formatObjectAsTable(event.details)}`;
                 } else if (event.event_type) {
                     // Generic event type description
                     if (event.event_type.toLowerCase().includes('create')) {
                         const objType = event.event_type.split('_')[0] || 'item';
-                        detailsContent = `New ${objType} was created`;
+                        detailsContent = `<strong>New ${objType} was created</strong>`;
                     } else if (event.event_type.toLowerCase().includes('update')) {
-                        detailsContent = `${event.event_type.split('_')[0] || 'Item'} was updated`;
+                        detailsContent = `<strong>${event.event_type.split('_')[0] || 'Item'} was updated</strong>`;
                     } else {
-                        detailsContent = 'Action was performed';
+                        detailsContent = `<strong>Action performed:</strong> ${event.event_type}`;
                     }
                 } else {
-                    detailsContent = 'N/A';
+                    detailsContent = 'No details available';
                 }
 
                 const row = document.createElement('tr');
@@ -551,43 +557,119 @@
             elements.pageInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${allEvents.length} events`;
         }
 
-        // Helper function to format profile changes
-        function formatProfileChanges(fromData, toData) {
-            let changes = [];
-            
-            // Check if this is a creation event (no from data or empty from data)
+        // Format changes as a comparison table
+        function formatChangesAsTable(fromData, toData) {
+            // Check if this is a creation event
             if (!fromData || Object.keys(fromData).length === 0) {
                 const objType = toData._id ? 'user' : 'file';
-                return `New ${objType} was created: ${JSON.stringify(toData, null, 2)}`;
+                return `<strong>New ${objType} created:</strong><br>${formatObjectAsTable(toData)}`;
             }
             
-            // Compare each field between from and to
-            for (const key in fromData) {
+            let tableHTML = `
+                <table class="changes-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Old Value</th>
+                            <th>New Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            let hasChanges = false;
+            const allKeys = new Set([...Object.keys(fromData), ...Object.keys(toData)]);
+            
+            for (const key of allKeys) {
                 if (key === '_id' || key === 'hashed_pass' || key === 'past_passwords') continue;
                 
                 const fromValue = fromData[key];
                 const toValue = toData[key];
                 
-                if (JSON.stringify(fromValue) !== JSON.stringify(toValue)) {
-                    changes.push(`
-                        <div class="change-item">
-                            <strong>${key}:</strong>
-                            <div class="change-from">${formatValue(fromValue)}</div>
-                            <div class="change-to">${formatValue(toValue)}</div>
-                        </div>
-                    `);
+                // Skip if both values are empty/undefined
+                if (!fromValue && !toValue) continue;
+                
+                // Check if values are different
+                const valuesEqual = JSON.stringify(fromValue) === JSON.stringify(toValue);
+                
+                if (!valuesEqual) {
+                    hasChanges = true;
+                    tableHTML += `
+                        <tr>
+                            <td class="field-name">${key}</td>
+                            <td class="old-value">${formatValue(fromValue)}</td>
+                            <td class="new-value">${formatValue(toValue)}</td>
+                        </tr>
+                    `;
+                } else {
+                    tableHTML += `
+                        <tr>
+                            <td class="field-name">${key}</td>
+                            <td colspan="2" class="no-change">No change</td>
+                        </tr>
+                    `;
                 }
             }
             
-            return changes.length > 0 
-                ? `<div class="profile-changes">${changes.join('')}</div>`
-                : 'No changes detected';
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            return hasChanges 
+                ? `<strong>Changes detected:</strong><br>${tableHTML}`
+                : '<strong>No changes detected</strong>';
+        }
+
+        // Format an object as a simple table
+        function formatObjectAsTable(obj) {
+            if (!obj || typeof obj !== 'object') return formatValue(obj);
+            
+            let tableHTML = `
+                <table class="changes-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const key in obj) {
+                if (key === '_id' || key === 'hashed_pass' || key === 'past_passwords') continue;
+                
+                tableHTML += `
+                    <tr>
+                        <td class="field-name">${key}</td>
+                        <td>${formatValue(obj[key])}</td>
+                    </tr>
+                `;
+            }
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            return tableHTML;
         }
 
         // Helper function to format values for display
         function formatValue(value) {
-            if (value === null || value === undefined) return 'N/A';
-            if (typeof value === 'object') return JSON.stringify(value, null, 2);
+            if (value === null) return 'null';
+            if (value === undefined) return 'undefined';
+            if (value === '') return '"" (empty string)';
+            
+            if (typeof value === 'object') {
+                if (Array.isArray(value)) {
+                    return value.length > 0 
+                        ? `[${value.map(v => formatValue(v)).join(', ')}]`
+                        : '[] (empty array)';
+                }
+                return JSON.stringify(value, null, 2);
+            }
+            
             return value.toString();
         }
 
