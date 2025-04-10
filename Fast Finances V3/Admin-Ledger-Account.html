@@ -134,10 +134,53 @@
         .debit {
             color: #28a745;
             text-align: right;
+            font-family: monospace;
+            padding-right: 20px !important;
         }
         .credit {
             color: #dc3545;
             text-align: right;
+            font-family: monospace;
+            padding-right: 20px !important;
+        }
+        .journal-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .journal-link:hover {
+            text-decoration: underline;
+        }
+        .numeric-header {
+            text-align: right;
+            padding-right: 20px !important;
+        }
+        .raw-json-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .raw-json-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .raw-json-content {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: white;
+            padding: 10px;
+            border-radius: 3px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .toggle-json-btn {
+            margin-top: 10px;
+            background-color: #6c757d;
+            color: white;
         }
     </style>
 </head>
@@ -168,22 +211,27 @@
                 <tr>
                     <th>Date</th>
                     <th>Description</th>
-                    <th>Post Ref</th>
-                    <th>Debit</th>
-                    <th>Credit</th>
+                    <th class="numeric-header">Debit</th>
+                    <th class="numeric-header">Credit</th>
                     <th>Journal</th>
                 </tr>
             </thead>
             <tbody id="ledgerTableBody">
                 <tr>
-                    <td colspan="6" style="text-align: center;">Loading transactions...</td>
+                    <td colspan="5" style="text-align: center;">Loading transactions...</td>
                 </tr>
             </tbody>
         </table>
 
+        <div class="raw-json-container" id="rawJsonContainer" style="display: none;">
+            <div class="raw-json-title">Raw JSON Data</div>
+            <div class="raw-json-content" id="rawJsonContent"></div>
+        </div>
+
         <div class="button-container">
             <button class="btn btn-back" onclick="window.location.href='Admin_Accountants_Roster.html'">Back to Roster</button>
             <button class="btn" onclick="window.location.href='Admin-Dashboard.html'">Dashboard</button>
+            
         </div>
     </div>
 
@@ -195,25 +243,33 @@
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('DOM fully loaded, initializing ledger page');
             const spinner = document.createElement('div');
             spinner.className = 'loading';
             document.body.appendChild(spinner);
             
             try {
-                // Load current user
+                console.log('Loading current user...');
                 loadCurrentUser();
                 
-                // Load account data
+                console.log('Loading account data...');
                 await loadAccountData();
                 
-                // Load transactions
+                console.log('Loading transactions...');
                 await loadTransactions();
                 
-                // Display everything
+                console.log('Displaying account information...');
                 displayAccountInfo();
+                
+                console.log('Displaying transactions...');
                 displayTransactions();
                 
+                console.log('Updating raw JSON display...');
+                updateRawJsonDisplay();
+                
+                console.log('Ledger page initialized successfully');
             } catch (error) {
+                console.error('Error initializing ledger page:', error);
                 showError(error.message);
             } finally {
                 spinner.style.display = 'none';
@@ -222,38 +278,51 @@
 
         // Load current user from storage
         function loadCurrentUser() {
-            const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
-            if (userData) {
-                const user = JSON.parse(userData);
-                document.getElementById('username').textContent = user.first_name 
-                    ? `${user.first_name} ${user.last_name || ''}`.trim()
-                    : user.username || "Admin";
+            console.log('Attempting to load current user');
+            try {
+                const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    console.log('User data found:', user);
+                    document.getElementById('username').textContent = user.first_name 
+                        ? `${user.first_name} ${user.last_name || ''}`.trim()
+                        : user.username || "Admin";
+                } else {
+                    console.log('No user data found in storage');
+                }
+            } catch (error) {
+                console.error('Error loading user:', error);
             }
         }
 
         // Load account data
         async function loadAccountData() {
+            console.log('Loading account data...');
             try {
                 // First try to get account from localStorage
                 const accountData = localStorage.getItem('selectedAccount');
                 if (accountData) {
                     currentAccount = JSON.parse(accountData);
+                    console.log('Loaded account from localStorage:', currentAccount);
                     return;
                 }
                 
                 // If not in localStorage, try to get from URL
                 const accountId = getAccountIdFromUrl();
+                console.log('Account ID from URL:', accountId);
                 if (!accountId) {
                     throw new Error("No account selected. Please select an account first.");
                 }
                 
                 // Fetch from API
+                console.log(`Fetching account details from API for account ID: ${accountId}`);
                 const response = await fetch(`${API_BASE_URL}/accounts/${accountId}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch account details.");
                 }
                 
                 currentAccount = await response.json();
+                console.log('Account data received from API:', currentAccount);
                 localStorage.setItem('selectedAccount', JSON.stringify(currentAccount));
                 
             } catch (error) {
@@ -265,32 +334,63 @@
         // Get account ID from URL
         function getAccountIdFromUrl() {
             const params = new URLSearchParams(window.location.search);
-            return params.get('account_id');
+            const accountId = params.get('account_id');
+            console.log('Extracted account ID from URL:', accountId);
+            return accountId;
         }
 
         // Load transactions from API
         async function loadTransactions() {
+            console.log('Loading transactions...');
             if (!currentAccount?.account_id) {
                 throw new Error("Account data not loaded properly.");
             }
 
             try {
+                console.log(`Fetching transactions for account ID: ${currentAccount.account_id}`);
                 const response = await fetch(`${API_BASE_URL}/ledger/transactions?account_id=${currentAccount.account_id}`);
                 if (!response.ok) {
                     throw new Error("Failed to load transactions.");
                 }
 
-                currentTransactions = await response.json();
+                const transactions = await response.json();
+                console.log(`Received ${transactions.length} transactions:`, transactions);
+                
+                // Process the transactions data to match the expected format
+                currentTransactions = transactions.map(tx => ({
+                    date: tx.date,
+                    description: tx.account_name || 'Transaction',
+                    side: tx.side.toLowerCase(),
+                    amount: tx.balance,
+                    journal_ref: tx.post_reference ? getJournalRef(tx.post_reference) : null,
+                    post_reference: tx.post_reference || null
+                }));
+                
+                console.log('Processed transactions:', currentTransactions);
             } catch (error) {
                 console.error("Error loading transactions:", error);
                 throw new Error("Failed to load transactions.");
             }
         }
 
+        // Generate journal reference (J1, J2, etc.)
+        function getJournalRef(post_reference) {
+            if (!post_reference) return null;
+            // Convert post_reference to "JX" format
+            const refStr = post_reference.toString();
+            const refNum = refStr.slice(-1); // Get last digit
+            return `J${refNum}`;
+        }
+
         // Display account information
         function displayAccountInfo() {
-            if (!currentAccount) return;
+            console.log('Displaying account information...');
+            if (!currentAccount) {
+                console.error('No account data to display');
+                return;
+            }
             
+            console.log('Current account data:', currentAccount);
             document.getElementById('accountInfo').innerHTML = `
                 <h3>${currentAccount.account_name || 'Unnamed Account'}</h3>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
@@ -304,7 +404,7 @@
                         <strong>Subcategory:</strong> ${currentAccount.sub_category || 'N/A'}
                     </div>
                     <div>
-                        <strong>Initial Balance:</strong> ${formatCurrency(currentAccount.initial_balance || 0)}
+                        <strong>Normal Side:</strong> ${currentAccount.normal_side || 'N/A'}
                     </div>
                     <div>
                         <strong>Status:</strong> ${currentAccount.status ? 'Active' : 'Inactive'}
@@ -315,36 +415,79 @@
 
         // Display transactions in table
         function displayTransactions() {
+            console.log('Displaying transactions...');
+            const tableBody = document.getElementById('ledgerTableBody');
+            
             if (!currentTransactions?.length) {
-                document.getElementById('ledgerTableBody').innerHTML = `
+                console.log('No transactions to display');
+                tableBody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align: center;">No transactions found</td>
+                        <td colspan="5" style="text-align: center;">No transactions found</td>
                     </tr>
                 `;
                 return;
             }
 
-            document.getElementById('ledgerTableBody').innerHTML = currentTransactions.map(tx => `
-                <tr>
-                    <td>${formatDate(tx.date)}</td>
-                    <td>${tx.description || '-'}</td>
-                    <td>${tx.post_reference || '-'}</td>
-                    <td class="debit">${tx.side === 'DEBIT' ? formatCurrency(tx.amount) : ''}</td>
-                    <td class="credit">${tx.side === 'CREDIT' ? formatCurrency(tx.amount) : ''}</td>
-                    <td>${tx.journal_page || '-'}</td>
-                </tr>
-            `).join('');
+            console.log(`Displaying ${currentTransactions.length} transactions`);
+            tableBody.innerHTML = currentTransactions.map(tx => {
+                console.log('Processing transaction:', tx);
+                const debitAmount = tx.side === 'debit' ? formatCurrency(tx.amount) : '';
+                const creditAmount = tx.side === 'credit' ? formatCurrency(tx.amount) : '';
+                const journalLink = tx.journal_ref ? 
+                    `<span class="journal-link" onclick="viewJournalEntry('${tx.post_reference}')">${tx.journal_ref}</span>` : 
+                    '-';
+                
+                return `
+                    <tr>
+                        <td>${formatDate(tx.date)}</td>
+                        <td>${tx.description || '-'}</td>
+                        <td class="debit">${debitAmount}</td>
+                        <td class="credit">${creditAmount}</td>
+                        <td>${journalLink}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // View journal entry
+        function viewJournalEntry(post_reference) {
+            console.log(`Viewing journal entry with post_reference: ${post_reference}`);
+            // Store the post_reference in localStorage to access on the next page
+            localStorage.setItem('selectedJournal', post_reference);
+            // Navigate to the journal entry page
+            window.location.href = 'Journal-Entry-Detail.html';
+        }
+
+        // Toggle raw JSON display
+        function toggleRawJson() {
+            const container = document.getElementById('rawJsonContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Update raw JSON display
+        function updateRawJsonDisplay() {
+            const jsonContent = document.getElementById('rawJsonContent');
+            const dataToDisplay = {
+                account: currentAccount,
+                transactions: currentTransactions
+            };
+            jsonContent.textContent = JSON.stringify(dataToDisplay, null, 2);
         }
 
         // Format date
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             try {
-                if (dateString.includes('/')) {
-                    const [year, day, month] = dateString.split('/');
+                // If date is in YYYY-MM-DD format
+                if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    const [year, month, day] = dateString.split('-');
                     return `${month}/${day}/${year}`;
                 }
+                // For other formats, try to parse as is
                 const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    return dateString; // Return original if invalid
+                }
                 return date.toLocaleDateString();
             } catch {
                 return dateString;
@@ -354,11 +497,15 @@
         // Format currency
         function formatCurrency(amount) {
             if (amount === null || amount === undefined) return '0.00';
-            return parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+            const formatted = num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            console.log(`Formatted currency: ${amount} -> ${formatted}`);
+            return formatted;
         }
 
         // Show error message
         function showError(message) {
+            console.error('Displaying error message:', message);
             const errorElement = document.getElementById('errorMessage');
             errorElement.textContent = message;
             errorElement.style.display = 'block';
@@ -366,6 +513,7 @@
 
         // Logout
         function logout() {
+            console.log('Logging out user...');
             sessionStorage.removeItem('currentUser');
             localStorage.removeItem('currentUser');
             localStorage.removeItem('selectedAccount');

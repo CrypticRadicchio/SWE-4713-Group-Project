@@ -139,6 +139,17 @@
             background-color: #f2f2f2;
             font-weight: bold;
         }
+        .right-justified {
+            text-align: right;
+        }
+        .debit {
+            color: #28a745; /* Green for debit */
+            font-weight: bold;
+        }
+        .credit {
+            color: #dc3545; /* Red for credit */
+            font-weight: bold;
+        }
         .button-container {
             margin-top: 30px;
             text-align: center;
@@ -148,6 +159,17 @@
         }
         .btn-back:hover {
             background: #5a6268;
+        }
+        .clickable-ref {
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .clickable-ref:hover {
+            color: #0056b3;
+        }
+        .amount-column {
+            width: 120px;
         }
     </style>
 </head>
@@ -183,9 +205,9 @@
                     <tr>
                         <th>Date</th>
                         <th>Account Name</th>
-                        <th>Balance</th>
-                        <th>Side</th>
                         <th>Post Reference</th>
+                        <th class="amount-column">Debit</th>
+                        <th class="amount-column">Credit</th>
                         <th>Journal Page</th>
                     </tr>
                 </thead>
@@ -205,32 +227,36 @@
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing...');
+            console.log('[DEBUG] Page loaded, initializing Journal Transaction Lookup...');
             loadCurrentUser();
             
             // Check if journal ID was passed from previous page
             const journalId = localStorage.getItem('selectedJournal');
             if (journalId) {
+                console.log(`[DEBUG] Found journal ID in localStorage: ${journalId}`);
                 document.getElementById('journalId').value = journalId;
                 fetchTransaction();
                 localStorage.removeItem('selectedJournal');
+            } else {
+                console.log('[DEBUG] No journal ID found in localStorage');
             }
         });
 
         // Load current user from localStorage
         function loadCurrentUser() {
-            console.log('Attempting to load current user...');
+            console.log('[DEBUG] Attempting to load current user...');
             const userData = localStorage.getItem('currentUser');
             if (!userData) {
+                console.error('[ERROR] No user data found in localStorage');
                 throw new Error("User not logged in. Please login first.");
             }
             currentUser = JSON.parse(userData);
-            console.log('Current user loaded:', currentUser);
+            console.log('[DEBUG] Current user loaded:', currentUser);
             document.getElementById('username').textContent = currentUser.name || currentUser.username || "Accountant";
         }
 
         async function fetchTransaction() {
-            console.log('fetchTransaction() called');
+            console.log('[DEBUG] fetchTransaction() called');
             const journalId = document.getElementById('journalId').value.trim();
             const resultsDiv = document.getElementById('results');
             const errorDiv = document.getElementById('error');
@@ -242,16 +268,19 @@
             errorDiv.textContent = '';
             
             if (!journalId) {
-                console.log('Validation failed - no journal ID entered');
+                console.error('[ERROR] Validation failed - no journal ID entered');
                 showError('Please enter a Journal ID');
                 return;
             }
             
-            console.log(`Fetching data for journal ID: ${journalId}`);
+            console.log(`[DEBUG] Fetching data for journal ID: ${journalId}`);
             loadingDiv.style.display = 'block';
             
             try {
-                const response = await fetch(`https://fast-finance-e250d1a7d65a.herokuapp.com/journal/get_one?journal_id=${encodeURIComponent(journalId)}`, {
+                const apiUrl = `https://fast-finance-e250d1a7d65a.herokuapp.com/journal/get_one?journal_id=${encodeURIComponent(journalId)}`;
+                console.log(`[DEBUG] Making API call to: ${apiUrl}`);
+                
+                const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -259,11 +288,11 @@
                     }
                 });
                 
-                console.log('Response received', response);
+                console.log('[DEBUG] Response received', response);
                 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    console.error('API Error details:', errorData);
+                    console.error('[ERROR] API Error details:', errorData);
                     
                     if (response.status === 422) {
                         const errorMessage = errorData.detail?.[0]?.msg || 
@@ -275,7 +304,7 @@
                 }
                 
                 const data = await response.json();
-                console.log('API Response Data:', data);
+                console.log('[DEBUG] API Response Data:', data);
                 
                 if (data.error) {
                     throw new Error(data.error);
@@ -283,15 +312,16 @@
                 
                 displayResults(data);
             } catch (error) {
-                console.error('Error:', error);
+                console.error('[ERROR] Failed to fetch transaction:', error);
                 showError(error.message);
             } finally {
                 loadingDiv.style.display = 'none';
+                console.log('[DEBUG] Loading spinner hidden');
             }
         }
         
         function displayResults(data) {
-            console.log('Displaying results:', data);
+            console.log('[DEBUG] Displaying results for journal:', data.journal_id);
             const resultsDiv = document.getElementById('results');
             const journalHeaderDiv = document.getElementById('journalHeader');
             const transactionsBody = document.getElementById('transactionsBody');
@@ -304,26 +334,37 @@
                 <p><strong>Status:</strong> ${formatStatus(data.approved_status)}</p>
                 <p><strong>Comment:</strong> ${data.comment || 'No comment'}</p>
             `;
+            console.log('[DEBUG] Journal header populated');
             
             // Display transactions in table format
             transactionsBody.innerHTML = '';
             if (data.transactions && data.transactions.length > 0) {
-                console.log(`Found ${data.transactions.length} transactions`);
-                data.transactions.forEach(transaction => {
-                    console.log('Processing transaction:', transaction);
+                console.log(`[DEBUG] Found ${data.transactions.length} transactions`);
+                data.transactions.forEach((transaction, index) => {
+                    console.log(`[DEBUG] Processing transaction ${index + 1}:`, transaction);
+                    
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${formatDate(data.date) || 'N/A'}</td>
+                        <td>${formatDate(transaction.date || data.date) || 'N/A'}</td>
                         <td>${transaction.account_name || 'N/A'}</td>
-                        <td>$${(transaction.amount || 0).toFixed(2)}</td>
-                        <td>${transaction.type || 'N/A'}</td>
-                        <td>${transaction.id || 'N/A'}</td>
-                        <td>${data.journal_id || 'N/A'}</td>
+                        <td class="clickable-ref" onclick="navigateToPostReference('${transaction.post_reference}')">
+                            ${transaction.post_reference || 'N/A'}
+                        </td>
+                        <td class="right-justified ${transaction.side === 'debit' ? 'debit' : ''}">
+                            ${transaction.side === 'debit' ? formatCurrency(transaction.amount) : ''}
+                        </td>
+                        <td class="right-justified ${transaction.side === 'credit' ? 'credit' : ''}">
+                            ${transaction.side === 'credit' ? formatCurrency(transaction.amount) : ''}
+                        </td>
+                        <td class="clickable-ref" onclick="navigateToJournalPage('${data.journal_page}')">
+                            ${data.journal_page || 'N/A'}
+                        </td>
                     `;
                     transactionsBody.appendChild(row);
                 });
+                console.log('[DEBUG] Transactions table populated');
             } else {
-                console.log('No transactions found');
+                console.log('[DEBUG] No transactions found for this journal');
                 transactionsBody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align: center;">No transactions found for this journal entry.</td>
@@ -332,33 +373,103 @@
             }
             
             resultsDiv.style.display = 'block';
+            console.log('[DEBUG] Results section displayed');
+        }
+
+        // Format currency with commas and 2 decimal places
+        function formatCurrency(amount) {
+            if (amount === undefined || amount === null) {
+                console.log('[DEBUG] Amount is undefined or null, returning empty string');
+                return '';
+            }
+            
+            try {
+                const formattedAmount = parseFloat(amount).toLocaleString('en-US', {
+                    style: 'decimal',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                console.log(`[DEBUG] Formatted amount: ${amount} -> $${formattedAmount}`);
+                return `$${formattedAmount}`;
+            } catch (e) {
+                console.error(`[ERROR] Failed to format amount: ${amount}`, e);
+                return `$${parseFloat(amount).toFixed(2)}`;
+            }
+        }
+
+        // Navigate to journal page
+        function navigateToJournalPage(journalPage) {
+            console.log(`[DEBUG] Navigating to journal page: ${journalPage}`);
+            if (!journalPage) {
+                console.warn('[WARNING] No journal page provided');
+                return;
+            }
+            
+            // Store the journal page in localStorage for the next page
+            localStorage.setItem('selectedJournalPage', journalPage);
+            console.log(`[DEBUG] Stored journal page in localStorage: ${journalPage}`);
+            
+            // Redirect to the journal view page
+            window.location.href = 'Admin-Journal-View-Page.html';
+        }
+
+        // Navigate to post reference
+        function navigateToPostReference(postRef) {
+            console.log(`[DEBUG] Navigating to post reference: ${postRef}`);
+            if (!postRef) {
+                console.warn('[WARNING] No post reference provided');
+                return;
+            }
+            
+            // Store the post reference in localStorage for the next page
+            localStorage.setItem('selectedPostReference', postRef);
+            console.log(`[DEBUG] Stored post reference in localStorage: ${postRef}`);
+            
+            // Redirect to the journal view page
+            window.location.href = 'Admin-Journal-View-Page.html';
         }
 
         // Helper function to format date
         function formatDate(dateString) {
-            if (!dateString) return 'N/A';
+            if (!dateString) {
+                console.log('[DEBUG] No date string provided');
+                return 'N/A';
+            }
+            
             try {
+                console.log(`[DEBUG] Formatting date: ${dateString}`);
                 // Handle both API format (YYYY/DD/MM) and ISO format
                 if (dateString.includes('/')) {
                     const [year, day, month] = dateString.split('/');
-                    return `${month}/${day}/${year}`;
+                    const formattedDate = `${month}/${day}/${year}`;
+                    console.log(`[DEBUG] Formatted date (split): ${formattedDate}`);
+                    return formattedDate;
                 }
                 const date = new Date(dateString);
-                return date.toLocaleDateString();
-            } catch {
+                const formattedDate = date.toLocaleDateString();
+                console.log(`[DEBUG] Formatted date (Date object): ${formattedDate}`);
+                return formattedDate;
+            } catch (e) {
+                console.error(`[ERROR] Failed to format date: ${dateString}`, e);
                 return dateString;
             }
         }
 
         // Format status display
         function formatStatus(status) {
-            if (!status) return 'N/A';
-            return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            if (!status) {
+                console.log('[DEBUG] No status provided');
+                return 'N/A';
+            }
+            
+            const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+            console.log(`[DEBUG] Formatted status: ${status} -> ${formattedStatus}`);
+            return formattedStatus;
         }
 
         // Show error message
         function showError(message) {
-            console.error('Displaying error message:', message);
+            console.error(`[ERROR] Displaying error message: ${message}`);
             const errorElement = document.getElementById('error');
             errorElement.textContent = message;
             errorElement.style.display = 'block';
@@ -366,8 +477,9 @@
 
         // Logout function
         function logout() {
-            console.log('User logging out');
+            console.log('[DEBUG] User logging out');
             localStorage.removeItem('currentUser');
+            console.log('[DEBUG] Removed currentUser from localStorage');
             window.location.href = 'login.html';
         }
     </script>
