@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .banner {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .banner img {
+            height: 60px;
+            margin-right: 15px;
+        }
+        .banner h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .container {
+            max-width: 400px;
+            margin: 100px auto 0;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+        }
+        .container label {
+            align-self: flex-start;
+            margin-bottom: 5px;
+        }
+        .container input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .container button {
+            width: 48%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .container .submit-btn {
+            background-color: #007BFF;
+            color: white;
+        }
+        .container .back-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-bottom: 15px;
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+        .success-message {
+            color: #28a745;
+            margin-bottom: 15px;
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+        .loading {
+            display: none;
+            color: #007BFF;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <img src="Logo.png" alt="Fast Finances Logo">
+        <h1>Fast Finances</h1>
+    </div>
+    <div class="container">
+        <h2>Security Questions</h2>
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+        <div id="loading" class="loading">Verifying answers...</div>
+        <form id="securityQuestionsForm">
+            <label id="label1" for="answer1">Security Question 1</label>
+            <input type="text" id="answer1" name="answer1" required>
+            
+            <label id="label2" for="answer2">Security Question 2</label>
+            <input type="text" id="answer2" name="answer2" required>
+            
+            <label id="label3" for="answer3">Security Question 3</label>
+            <input type="text" id="answer3" name="answer3" required>
+            
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+                <button type="button" class="back-btn" onclick="window.location.href='ForgotPassword.html'">Back</button>
+                <button type="button" class="submit-btn" onclick="validateAnswers()">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Load user data from sessionStorage
+        const resetUser = JSON.parse(sessionStorage.getItem('resetPasswordUser'));
+        
+        if (!resetUser || !resetUser.id) {
+            window.location.href = 'ForgotPassword.html';
+        }
+        
+        // Display questions on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!resetUser.securityQuestions) {
+                showError("Security questions not found for this user.");
+                document.getElementById('securityQuestionsForm').style.display = 'none';
+                return;
+            }
+
+            // Get questions from session storage
+            const questions = Array.isArray(resetUser.securityQuestions) 
+                ? resetUser.securityQuestions 
+                : [
+                    resetUser.securityQuestions.question1,
+                    resetUser.securityQuestions.question2,
+                    resetUser.securityQuestions.question3
+                ];
+
+            // Display questions to user
+            document.getElementById('label1').textContent = questions[0];
+            document.getElementById('label2').textContent = questions[1];
+            document.getElementById('label3').textContent = questions[2];
+            
+            // Debug logging
+            console.group("Security Questions Loaded");
+            console.log("Question 1:", questions[0]);
+            console.log("Question 2:", questions[1]);
+            console.log("Question 3:", questions[2]);
+            console.log("User ID:", resetUser.id);
+            console.groupEnd();
+        });
+
+        // Main validation function
+        async function validateAnswers() {
+            clearMessages();
+            
+            // Get user answers
+            const answer1 = document.getElementById('answer1').value.trim();
+            const answer2 = document.getElementById('answer2').value.trim();
+            const answer3 = document.getElementById('answer3').value.trim();
+            
+            if (!answer1 || !answer2 || !answer3) {
+                showError("Please answer all security questions");
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const currentUserData = JSON.parse(sessionStorage.getItem('resetPasswordUser'));
+                if (!currentUserData || !currentUserData.id) {
+                    throw new Error("Session expired. Please start over.");
+                }
+
+                // Debug logging
+                console.group("User Answers Submission");
+                console.log("Answer 1:", answer1);
+                console.log("Answer 2:", answer2);
+                console.log("Answer 3:", answer3);
+                console.groupEnd();
+
+                // Call API to verify answers
+                const apiUrl = `https://fast-finance-e250d1a7d65a.herokuapp.com/users/login/forgot_password?user_id=${encodeURIComponent(currentUserData.id)}`;
+                console.log("API Request URL:", apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                // Parse response
+                let result;
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    console.error("Failed to parse JSON response:", e);
+                    throw new Error("Invalid server response");
+                }
+
+                // Debug logging
+                console.group("API Response");
+                console.log("Status:", response.status);
+                console.log("Response Data:", result);
+                
+                // Check if we got an array of answers back
+                if (Array.isArray(result)) {
+                    console.log("Expected Answers:", result);
+                    
+                    // Compare answers
+                    const matches = [
+                        answer1.toLowerCase() === result[0].toLowerCase(),
+                        answer2.toLowerCase() === result[1].toLowerCase(),
+                        answer3.toLowerCase() === result[2].toLowerCase()
+                    ];
+                    
+                    console.log("Answer Matches:", matches);
+                    
+                    if (matches.every(m => m)) {
+                        // All answers match - proceed with password reset
+                        sessionStorage.setItem('passwordResetToken', 'verified');
+                        showSuccess("Answers verified! Redirecting...");
+                        setTimeout(() => window.location.href = 'newpassword.html', 1500);
+                    } else {
+                        throw new Error("One or more answers are incorrect");
+                    }
+                } else if (result.message) {
+                    // API returned an error message
+                    throw new Error(result.message);
+                } else {
+                    // Unexpected response format
+                    throw new Error("Invalid response from server");
+                }
+                
+                console.groupEnd();
+                
+            } catch (error) {
+                console.error("Verification Error:", error);
+                showError(error.message || "Could not verify your answers. Please try again.");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Helper functions
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const element = document.getElementById('error-message');
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const element = document.getElementById('success-message');
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        function clearMessages() {
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

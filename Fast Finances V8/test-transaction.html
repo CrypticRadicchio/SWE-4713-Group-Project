@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Transaction Lookup</title>
+    <style>
+        /* [Previous CSS styles remain the same] */
+    </style>
+</head>
+<body>
+    <h1>Journal Transaction Lookup</h1>
+    
+    <div class="input-section">
+        <label for="journalId">Enter Journal ID:</label>
+        <input type="text" id="journalId" placeholder="e.g., 123">
+        <button onclick="fetchTransaction()">Get Transactions</button>
+        <div id="loading" class="loading">Loading transaction data...</div>
+    </div>
+    
+    <div id="error" class="error"></div>
+    
+    <div id="results">
+        <div id="journalHeader" class="journal-header"></div>
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Account Name</th>
+                    <th>Balance</th>
+                    <th>Side</th>
+                    <th>Post Reference</th>
+                    <th>Journal Page</th>
+                </tr>
+            </thead>
+            <tbody id="transactionsBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchTransaction() {
+            console.log('fetchTransaction() called');
+            const journalId = document.getElementById('journalId').value.trim();
+            const resultsDiv = document.getElementById('results');
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            
+            // Clear previous results and errors
+            resultsDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            
+            if (!journalId) {
+                console.log('Validation failed - no journal ID entered');
+                errorDiv.textContent = 'Please enter a Journal ID';
+                return;
+            }
+            
+            console.log(`Fetching data for journal ID: ${journalId}`);
+            loadingDiv.style.display = 'block';
+            
+            try {
+                // First try with numeric ID
+                if (!isNaN(journalId)) {
+                    await tryFetch(journalId, errorDiv);
+                }
+                // Then try with string ID if numeric failed
+                else {
+                    await tryFetch(journalId, errorDiv);
+                }
+            } catch (error) {
+                console.error('Final error:', error);
+                errorDiv.textContent = `Error: ${error.message}`;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        async function tryFetch(journalId, errorDiv) {
+            const apiUrl = `https://fast-finance-e250d1a7d65a.herokuapp.com/journal/get_one?journal_id=${journalId}`;
+            console.log(`Making GET request to: ${apiUrl}`);
+            
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Response received', response);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API Error details:', errorData);
+                
+                // Handle 422 specifically with detailed message
+                if (response.status === 422) {
+                    const errorMessage = errorData.detail?.[0]?.msg || 
+                                       errorData.message || 
+                                       'Invalid input data. Please check the Journal ID format.';
+                    throw new Error(errorMessage);
+                }
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('API Response Data:', data);
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            displayResults(data);
+        }
+        
+        function displayResults(data) {
+            console.log('Displaying results:', data);
+            const resultsDiv = document.getElementById('results');
+            const journalHeaderDiv = document.getElementById('journalHeader');
+            const transactionsBody = document.getElementById('transactionsBody');
+            
+            // Display journal header information
+            journalHeaderDiv.innerHTML = `
+                <p><strong>Journal ID:</strong> ${data.journal_id || 'N/A'}</p>
+                <p><strong>Date:</strong> ${data.date || 'N/A'}</p>
+                <p><strong>Description:</strong> ${data.description || 'N/A'}</p>
+            `;
+            
+            // Display transactions in table format
+            transactionsBody.innerHTML = '';
+            if (data.transactions && data.transactions.length > 0) {
+                console.log(`Found ${data.transactions.length} transactions`);
+                data.transactions.forEach(transaction => {
+                    console.log('Processing transaction:', transaction);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data.date || 'N/A'}</td>
+                        <td>${transaction.account_name || 'N/A'}</td>
+                        <td>$${(transaction.amount || 0).toFixed(2)}</td>
+                        <td>${transaction.type || 'N/A'}</td>
+                        <td>${transaction.id || 'N/A'}</td>
+                        <td>${data.journal_id || 'N/A'}</td>
+                    `;
+                    transactionsBody.appendChild(row);
+                });
+            } else {
+                console.log('No transactions found');
+                transactionsBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center;">No transactions found for this journal entry.</td>
+                    </tr>
+                `;
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
