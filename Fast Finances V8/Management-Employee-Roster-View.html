@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Roster View</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #007bff;
+            color: #fff;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .header-title {
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+            margin-left: 50px;
+        }
+
+        /* User Info Section */
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            padding: 100px 20px 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Status Indicators */
+        .status-active {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Button Styles */
+        .login-btn, .back-btn {
+            position: fixed;
+            bottom: 20px;
+            background-color: #007bff;
+            border: none;
+            color: #fff;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .login-btn {
+            right: 20px;
+        }
+
+        .back-btn {
+            right: 120px;
+        }
+
+        .login-btn:hover, .back-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* Loading Indicator */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #6c757d;
+        }
+
+        /* Error Message */
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <img src="Logo.png" alt="Logo" class="logo">
+        <h1 class="header-title">Fast Finances</h1>
+        <div class="user-info">
+            <img src="Management.png" alt="User Picture">
+            <div class="user-name" id="current-username">Loading...</div>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container">
+        <h2>Employee Roster</h2>
+        <div id="loading-indicator" class="loading">Loading employee data...</div>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        
+        <table id="employee-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="employee-table-body">
+                <!-- Employee rows will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Logout and Back buttons -->
+    <button class="login-btn" onclick="logout()">Log Out</button>
+    <button class="back-btn" onclick="window.location.href='Management-Dashboard.html'">Back</button>
+
+    <script>
+        // Function to display the current user
+        function displayCurrentUser() {
+            try {
+                // Check sessionStorage first for active session
+                const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+                if (currentUser) {
+                    const displayName = currentUser.first_name 
+                        ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
+                        : currentUser.username || "Employee";
+                    document.getElementById("current-username").textContent = displayName;
+                    return;
+                }
+
+                // Fall back to localStorage if no active session
+                const usersData = JSON.parse(localStorage.getItem("userDatabase"));
+                if (usersData && usersData.users && usersData.users.length > 0) {
+                    const lastUser = usersData.users[usersData.users.length - 1];
+                    const displayName = lastUser.first_name 
+                        ? `${lastUser.first_name} ${lastUser.last_name || ''}`.trim()
+                        : lastUser.username || "Employee";
+                    document.getElementById("current-username").textContent = displayName;
+                } else {
+                    document.getElementById("current-username").textContent = "Employee";
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                document.getElementById("current-username").textContent = "Employee";
+            }
+        }
+
+        // Function to fetch and display employee data from store.html
+        async function fetchEmployeeData() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorMessage = document.getElementById('error-message');
+            const employeeTable = document.getElementById('employee-table');
+            
+            try {
+                // Fetch data from store.html
+                const response = await fetch('store.html');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch store.html: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                let employeeData;
+                
+                // Try to parse as direct JSON first
+                try {
+                    employeeData = JSON.parse(text);
+                } catch (e) {
+                    // If not direct JSON, try to parse as HTML with embedded JSON
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, 'text/html');
+                    const jsonScript = doc.querySelector('script[type="application/json"]');
+                    
+                    if (!jsonScript) {
+                        throw new Error('No JSON data found in store.html');
+                    }
+                    
+                    employeeData = JSON.parse(jsonScript.textContent);
+                }
+                
+                // Validate we have employee data
+                if (!employeeData || !employeeData.users || !Array.isArray(employeeData.users)) {
+                    throw new Error('Invalid employee data format in store.html');
+                }
+                
+                populateTable(employeeData.users);
+                employeeTable.style.display = 'table';
+                loadingIndicator.style.display = 'none';
+                
+            } catch (error) {
+                console.error('Error loading employee data:', error);
+                loadingIndicator.style.display = 'none';
+                errorMessage.textContent = 'Failed to load employee data. Please try again later.';
+                errorMessage.style.display = 'block';
+                
+                // Fallback to localStorage if available
+                try {
+                    const localData = JSON.parse(localStorage.getItem("userDatabase"));
+                    if (localData && localData.users) {
+                        populateTable(localData.users);
+                        employeeTable.style.display = 'table';
+                        loadingIndicator.style.display = 'none';
+                        errorMessage.style.display = 'none';
+                    }
+                } catch (fallbackError) {
+                    console.error('Fallback failed:', fallbackError);
+                }
+            }
+        }
+
+        // Function to populate the table with employee data
+        function populateTable(employees) {
+            const tableBody = document.getElementById('employee-table-body');
+            tableBody.innerHTML = '';
+
+            employees.forEach(employee => {
+                const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+                const role = employee.role || 'N/A';
+                const email = employee.email || 'N/A';
+                const status = employee.status ? 
+                    '<span class="status-active">Active</span>' : 
+                    '<span class="status-inactive">Inactive</span>';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${fullName || 'Unknown'}</td>
+                    <td>${role}</td>
+                    <td>${email}</td>
+                    <td>${status}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            displayCurrentUser();
+            fetchEmployeeData();
+        });
+    </script>
+</body>
+</html>

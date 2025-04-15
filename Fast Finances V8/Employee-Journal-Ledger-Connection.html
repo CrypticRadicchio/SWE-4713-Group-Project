@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Ledger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            height: 30px;
+            margin-right: 15px;
+        }
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .Accountant-badge {
+            height: 24px;
+            width: 24px;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .username {
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .page-title {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .account-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #d9534f;
+            padding: 15px;
+            background: #ffeeee;
+            border: 1px solid #ffdddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 6px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0069d9;
+        }
+        .btn-back {
+            background: #6c757d;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+        }
+        .button-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .debit {
+            color: #28a745;
+            text-align: right;
+        }
+        .credit {
+            color: #dc3545;
+            text-align: right;
+        }
+        .balance {
+            text-align: right;
+            font-weight: bold;
+        }
+        .total-row {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            min-width: 30px;
+        }
+        .pagination button.active {
+            background-color: #0056b3;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <div class="company-name">Fast Finance</div>
+        </div>
+        <div class="user-info">
+            <img src="Accountant.png" alt="Accountant" class="Accountant-badge" id="Accountant">
+            <span class="username" id="username">User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Account Ledger</h1>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        <div id="successMessage" style="display: none;"></div>
+        
+        <div class="account-info" id="accountInfo">
+            <p>Loading account information...</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody id="ledgerTableBody">
+                <tr>
+                    <td colspan="5" style="text-align: center;">Loading transactions...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div id="pagination" class="pagination" style="display: none;"></div>
+
+        <div class="button-container">
+            <button class="btn btn-back" onclick="window.location.href='Employee-Journal.html'">Back to Transactions</button>
+            <button class="btn" onclick="window.location.href='Employee-Dashboard.html'">Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com';
+        const ITEMS_PER_PAGE = 20;
+        let currentUser = null;
+        let currentAccount = null;
+        let currentTransactions = [];
+        let currentPage = 1;
+        let totalPages = 1;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                loadCurrentUser();
+                await loadAccountData();
+                displayAccountInfo();
+                await fetchTransactions();
+                setupPagination();
+                displayTransactions();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showError(error.message);
+                if (error.message.includes('account data')) {
+                    setTimeout(() => window.location.href = 'Employee-Journal.html', 3000);
+                }
+            }
+        });
+
+        function loadCurrentUser() {
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = JSON.parse(userData);
+            document.getElementById('username').textContent = currentUser.name || currentUser.username || "User";
+            document.getElementById('Accountant').style.display = 
+                (currentUser.role && currentUser.role.toLowerCase() === 'Accountant') ? 'block' : 'none';
+        }
+
+        async function loadAccountData() {
+            const accountData = localStorage.getItem('selectedAccount');
+            if (!accountData) {
+                const errorMsg = "No account selected. Please select an account first.";
+                showError(errorMsg);
+                throw new Error(errorMsg);
+            }
+            
+            try {
+                currentAccount = JSON.parse(accountData);
+                if (!currentAccount.post_reference) {
+                    throw new Error("Account data missing post_reference");
+                }
+            } catch (error) {
+                showError("Invalid account data format");
+                throw error;
+            }
+        }
+
+        async function fetchTransactions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ledger/transactions?post_reference=${currentAccount.post_reference}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentUser?.token || ''}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                currentTransactions = Array.isArray(data) ? data : (data.transactions || []);
+                
+                if (currentTransactions.length === 0) {
+                    showSuccess("No transactions found for this account");
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                throw new Error("Failed to load transactions. Please try again.");
+            }
+        }
+
+        function setupPagination() {
+            totalPages = Math.ceil(currentTransactions.length / ITEMS_PER_PAGE);
+            const paginationDiv = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                paginationDiv.style.display = 'none';
+                return;
+            }
+            
+            paginationDiv.style.display = 'flex';
+            paginationDiv.innerHTML = '';
+            
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.className = 'btn';
+            prevButton.textContent = '◄';
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayTransactions();
+                    setupPagination();
+                }
+            };
+            paginationDiv.appendChild(prevButton);
+            
+            // Page buttons
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = `btn ${i === currentPage ? 'active' : ''}`;
+                pageButton.textContent = i;
+                pageButton.onclick = () => {
+                    currentPage = i;
+                    displayTransactions();
+                    setupPagination();
+                };
+                paginationDiv.appendChild(pageButton);
+            }
+            
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.className = 'btn';
+            nextButton.textContent = '►';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayTransactions();
+                    setupPagination();
+                }
+            };
+            paginationDiv.appendChild(nextButton);
+        }
+
+        function displayAccountInfo() {
+            if (!currentAccount) return;
+            
+            const accountInfoDiv = document.getElementById('accountInfo');
+            accountInfoDiv.innerHTML = `
+                <h3>${currentAccount.account_name || 'Unnamed Account'}</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
+                    <div><strong>Account Number:</strong> ${currentAccount.post_reference || 'N/A'}</div>
+                    <div><strong>Type:</strong> ${currentAccount.side ? currentAccount.side.charAt(0).toUpperCase() + currentAccount.side.slice(1).toLowerCase() : 'N/A'}</div>
+                    <div><strong>Current Balance:</strong> ${formatCurrency(currentAccount.balance)}</div>
+                </div>
+            `;
+        }
+
+        function displayTransactions() {
+            const tbody = document.getElementById('ledgerTableBody');
+            
+            if (!currentTransactions?.length) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No transactions found</td></tr>`;
+                return;
+            }
+
+            // Get transactions for current page
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, currentTransactions.length);
+            const pageTransactions = currentTransactions.slice(startIndex, endIndex);
+
+            // Calculate running balance and totals
+            let runningBalance = 0;
+            let pageDebits = 0;
+            let pageCredits = 0;
+            let allDebits = 0;
+            let allCredits = 0;
+            let finalBalance = 0;
+
+            // Calculate all transactions for grand totals
+            currentTransactions.forEach(tx => {
+                const amount = parseFloat(tx.balance) || 0;
+                if (tx.side === 'debit') {
+                    allDebits += amount;
+                    finalBalance += amount;
+                } else if (tx.side === 'credit') {
+                    allCredits += amount;
+                    finalBalance -= amount;
+                }
+            });
+
+            // Generate rows for current page
+            let rows = pageTransactions.map(tx => {
+                const amount = parseFloat(tx.balance) || 0;
+                if (tx.side === 'debit') {
+                    runningBalance += amount;
+                    pageDebits += amount;
+                } else if (tx.side === 'credit') {
+                    runningBalance -= amount;
+                    pageCredits += amount;
+                }
+                
+                return `
+                    <tr>
+                        <td>${formatDate(tx.date)}</td>
+                        <td>${tx.description || '-'}</td>
+                        <td class="debit">${tx.side === 'debit' ? formatCurrency(amount) : ''}</td>
+                        <td class="credit">${tx.side === 'credit' ? formatCurrency(amount) : ''}</td>
+                        <td class="balance">${formatCurrency(runningBalance)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Add page totals row
+            rows += `
+                <tr class="total-row">
+                    <td colspan="2"><strong>Page Totals</strong></td>
+                    <td class="debit">${formatCurrency(pageDebits)}</td>
+                    <td class="credit">${formatCurrency(pageCredits)}</td>
+                    <td class="balance">${formatCurrency(runningBalance)}</td>
+                </tr>
+            `;
+
+            // Add grand totals row if paginated
+            if (totalPages > 1) {
+                rows += `
+                    <tr class="total-row" style="background-color: #e9ecef;">
+                        <td colspan="2"><strong>Account Totals</strong></td>
+                        <td class="debit">${formatCurrency(allDebits)}</td>
+                        <td class="credit">${formatCurrency(allCredits)}</td>
+                        <td class="balance">${formatCurrency(finalBalance)}</td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = rows;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                return new Date(dateString).toLocaleDateString();
+            } catch {
+                return dateString;
+            }
+        }
+
+        function formatCurrency(amount) {
+            const num = parseFloat(amount) || 0;
+            return num.toFixed(2);
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            setTimeout(() => successElement.style.display = 'none', 5000);
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('selectedAccount');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
