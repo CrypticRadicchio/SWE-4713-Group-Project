@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Statement | Fast Finances</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 0 20px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .logo {
+            height: 30px;
+            width: 30px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: normal;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            gap: 15px;
+        }
+        
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover;
+        }
+        
+        .user-info span {
+            font-size: 14px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .report-container {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .account-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .account-name {
+            flex: 2;
+            padding-right: 20px;
+        }
+        
+        .account-amount {
+            flex: 1;
+            text-align: right;
+            padding-right: 20px;
+        }
+        
+        .credit {
+            color: #dc3545;
+        }
+        
+        .debit {
+            color: #28a745;
+        }
+        
+        .credit-indent {
+            padding-left: 20px;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            border-top: 2px solid #333;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+        
+        .balance-row {
+            font-weight: bold;
+            border-top: 2px solid #333;
+            padding-top: 10px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            margin: 2px;
+            font-size: 14px;
+        }
+        
+        .btn-print { background-color: #007bff; }
+        .btn-back { background-color: #6c757d; }
+        .btn-logout { 
+            background-color: #dc3545;
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .date-filter label {
+            font-weight: bold;
+        }
+        
+        .date-filter input {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .date-filter button {
+            padding: 6px 12px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #007bff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .title-container h2 {
+            margin-bottom: 5px;
+        }
+        
+        .title-container p {
+            margin-top: 0;
+            color: #666;
+        }
+        
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                background-color: white;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+            }
+        }
+
+        .debug-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img src="Admin.png" alt="Admin Profile">
+            <span id="username">Admin</span>
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="title-container">
+            <h2 id="report-title">Income Statement</h2>
+            <p id="report-date">As of Loading...</p>
+        </div>
+
+        <div class="date-filter no-print">
+            <label for="start-date">From:</label>
+            <input type="date" id="start-date">
+            <label for="end-date">To:</label>
+            <input type="date" id="end-date">
+            <button onclick="applyDateFilter()">Apply Filter</button>
+        </div>
+
+        <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
+
+        <div class="report-container" id="incomeStatementContainer"></div>
+
+        <!-- Debug Container for Raw JSON -->
+        <div class="debug-container no-print">
+            <h4>API Response Debug:</h4>
+            <pre id="debugOutput">No data loaded yet...</pre>
+        </div>
+
+        <div class="button-container no-print">
+            <button class="btn btn-back" onclick="window.location.href='Admin-Dashboard.html'">Back to Dashboard</button>
+            <button class="btn btn-print" onclick="window.print()">Print Report</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to format numbers with commas and dollar sign
+        function formatCurrency(num) {
+            if (num === null || num === undefined || isNaN(num)) return '$0.00';
+            return '$' + parseFloat(num).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // Function to safely get element by ID
+        function getElementSafe(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.error(`Element with ID '${id}' not found`);
+                return null;
+            }
+            return element;
+        }
+
+        // Function to update debug output
+        function updateDebugOutput(data) {
+            const debugOutput = getElementSafe('debugOutput');
+            if (debugOutput) {
+                debugOutput.textContent = JSON.stringify(data, null, 2);
+            }
+            console.log('API Response:', data);
+        }
+
+        // Function to update the report date
+        function updateReportDate() {
+            const now = new Date();
+            const startDate = getElementSafe('start-date')?.value;
+            const endDate = getElementSafe('end-date')?.value;
+            const dateElement = getElementSafe('report-date');
+            
+            if (!dateElement) return;
+            
+            if (startDate && endDate) {
+                dateElement.textContent = 
+                    `For period ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
+            } else {
+                dateElement.textContent = 
+                    `As of ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+            }
+        }
+
+        // Function to apply date filter
+        function applyDateFilter() {
+            fetchIncomeStatement();
+        }
+
+        // Function to fetch and display income statement
+        async function fetchIncomeStatement() {
+            try {
+                const spinner = getElementSafe('loading-spinner');
+                const container = getElementSafe('incomeStatementContainer');
+                
+                if (spinner) spinner.style.display = 'block';
+                if (container) container.innerHTML = 'Loading income statement...';
+                
+                // Get date range
+                const startDate = getElementSafe('start-date')?.value;
+                const endDate = getElementSafe('end-date')?.value;
+                
+                // Build URL with parameters
+                let url = 'https://fast-finance-e250d1a7d65a.herokuapp.com/accounts';
+                const params = [];
+                
+                if (startDate) params.push(`start_date=${encodeURIComponent(startDate)}`);
+                if (endDate) params.push(`end_date=${encodeURIComponent(endDate)}`);
+                if (params.length > 0) url += `?${params.join('&')}`;
+                
+                console.log('Fetching from URL:', url);
+                
+                // Fetch data
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const accountsData = await response.json();
+                updateDebugOutput(accountsData); // Show raw JSON in debug output
+                
+                // Filter for IS accounts
+                const isAccounts = accountsData.filter(account => {
+                    const isISAccount = account.label && account.label.toUpperCase() === 'IS';
+                    console.log(`Account: ${account.account_name}, Label: ${account.label}, IS Account: ${isISAccount}`);
+                    return isISAccount;
+                });
+                
+                console.log('Filtered IS Accounts:', isAccounts);
+                
+                if (isAccounts.length === 0) {
+                    console.warn('No IS accounts found in response');
+                }
+                
+                displayIncomeStatement(isAccounts);
+            } catch (error) {
+                console.error('Error fetching income statement:', error);
+                const container = getElementSafe('incomeStatementContainer');
+                if (container) {
+                    container.innerHTML = `<p class="error">Error loading income statement: ${error.message}</p>`;
+                }
+            } finally {
+                const spinner = getElementSafe('loading-spinner');
+                if (spinner) {
+                    spinner.style.display = 'none';
+                }
+            }
+        }
+
+        // Function to display the income statement
+        function displayIncomeStatement(isAccounts) {
+            const container = getElementSafe('incomeStatementContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (!isAccounts || isAccounts.length === 0) {
+                container.innerHTML = '<p>No income statement accounts found. Please check if any accounts are labeled "IS".</p>';
+                updateReportDate();
+                return;
+            }
+            
+            // Separate revenues and expenses
+            const revenues = isAccounts.filter(account => account.normal_side && account.normal_side.toLowerCase() === 'credit');
+            const expenses = isAccounts.filter(account => account.normal_side && account.normal_side.toLowerCase() === 'debit');
+            
+            console.log('Revenues:', revenues);
+            console.log('Expenses:', expenses);
+            
+            // Create header row
+            const headerRow = document.createElement('div');
+            headerRow.className = 'account-row';
+            headerRow.innerHTML = `
+                <div class="account-name"><strong>Account Name</strong></div>
+                <div class="account-amount"><strong>Amount</strong></div>
+            `;
+            container.appendChild(headerRow);
+            
+            // Add revenues section
+            const revenueHeader = document.createElement('div');
+            revenueHeader.className = 'account-row';
+            revenueHeader.innerHTML = `
+                <div class="account-name"><strong>Revenues</strong></div>
+                <div class="account-amount"></div>
+            `;
+            container.appendChild(revenueHeader);
+            
+            let totalRevenue = 0;
+            revenues.forEach(account => {
+                const amount = account.balance || 0;
+                totalRevenue += amount;
+                
+                const row = document.createElement('div');
+                row.className = 'account-row';
+                row.innerHTML = `
+                    <div class="account-name credit-indent">${account.account_name || 'Unnamed Account'}</div>
+                    <div class="account-amount debit">${formatCurrency(amount)}</div>
+                `;
+                container.appendChild(row);
+            });
+            
+            // Add revenue total
+            const revenueTotal = document.createElement('div');
+            revenueTotal.className = 'account-row total-row';
+            revenueTotal.innerHTML = `
+                <div class="account-name">Total Revenue</div>
+                <div class="account-amount debit">${formatCurrency(totalRevenue)}</div>
+            `;
+            container.appendChild(revenueTotal);
+            
+            // Add expenses section
+            const expenseHeader = document.createElement('div');
+            expenseHeader.className = 'account-row';
+            expenseHeader.innerHTML = `
+                <div class="account-name"><strong>Expenses</strong></div>
+                <div class="account-amount"></div>
+            `;
+            container.appendChild(expenseHeader);
+            
+            let totalExpense = 0;
+            expenses.forEach(account => {
+                const amount = account.balance || 0;
+                totalExpense += amount;
+                
+                const row = document.createElement('div');
+                row.className = 'account-row';
+                row.innerHTML = `
+                    <div class="account-name credit-indent">${account.account_name || 'Unnamed Account'}</div>
+                    <div class="account-amount credit">${formatCurrency(amount)}</div>
+                `;
+                container.appendChild(row);
+            });
+            
+            // Add expense total
+            const expenseTotal = document.createElement('div');
+            expenseTotal.className = 'account-row total-row';
+            expenseTotal.innerHTML = `
+                <div class="account-name">Total Expenses</div>
+                <div class="account-amount credit">${formatCurrency(totalExpense)}</div>
+            `;
+            container.appendChild(expenseTotal);
+            
+            // Add net income
+            const netIncome = totalRevenue - totalExpense;
+            const netIncomeRow = document.createElement('div');
+            netIncomeRow.className = 'account-row balance-row';
+            netIncomeRow.innerHTML = `
+                <div class="account-name"><strong>Net Income</strong></div>
+                <div class="account-amount ${netIncome >= 0 ? 'debit' : 'credit'}">${formatCurrency(Math.abs(netIncome))}</div>
+            `;
+            container.appendChild(netIncomeRow);
+            
+            updateReportDate();
+        }
+
+        function displayLoggedInUser() {
+            try {
+                // First try sessionStorage
+                const sessionUser = JSON.parse(sessionStorage.getItem("currentUser"));
+                if (sessionUser) {
+                    const displayName = sessionUser.first_name 
+                        ? `${sessionUser.first_name} ${sessionUser.last_name || ''}`.trim()
+                        : sessionUser.username || sessionUser.id || "Administrator";
+                    const usernameElement = getElementSafe('username');
+                    if (usernameElement) {
+                        usernameElement.textContent = displayName;
+                    }
+                    
+                    if (sessionUser.profile_pic) {
+                        const profileImg = document.querySelector('.user-info img');
+                        if (profileImg) {
+                            profileImg.src = sessionUser.profile_pic;
+                        }
+                    }
+                    return;
+                }
+
+                // Then try localStorage
+                const localUser = JSON.parse(localStorage.getItem("currentUser"));
+                if (localUser) {
+                    const displayName = localUser.first_name 
+                        ? `${localUser.first_name} ${localUser.last_name || ''}`.trim()
+                        : localUser.username || localUser.id || "Administrator";
+                    const usernameElement = getElementSafe('username');
+                    if (usernameElement) {
+                        usernameElement.textContent = displayName;
+                    }
+                    
+                    if (localUser.profile_pic) {
+                        const profileImg = document.querySelector('.user-info img');
+                        if (profileImg) {
+                            profileImg.src = localUser.profile_pic;
+                        }
+                    }
+                    return;
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                const usernameElement = getElementSafe('username');
+                if (usernameElement) {
+                    usernameElement.textContent = "Administrator";
+                }
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
+        }
+
+        // Initialize date inputs with current month
+        function initDateInputs() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            const startDateInput = getElementSafe('start-date');
+            const endDateInput = getElementSafe('end-date');
+            
+            if (startDateInput) startDateInput.valueAsDate = firstDay;
+            if (endDateInput) endDateInput.valueAsDate = today;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            displayLoggedInUser();
+            initDateInputs();
+            fetchIncomeStatement();
+        });
+    </script>
+</body>
+</html>

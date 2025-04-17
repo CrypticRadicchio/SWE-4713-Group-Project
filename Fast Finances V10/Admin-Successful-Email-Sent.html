@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Email Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+
+        .header {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Ensure space between elements */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .header img {
+            height: 50px;
+            margin-right: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            flex-grow: 1;
+            font-size: 24px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        /* Red border around logout button */
+        .header .logout-button {
+            background-color: white;
+            color: #007BFF;
+            border: 2px solid red; /* Red border */
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .header .logout-button:hover {
+            background-color: #ffcccc; /* Light red on hover */
+            transform: scale(1.05);
+        }
+
+        /* User info section with side-by-side layout */
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px; /* Space between username and image */
+            margin-right: 40px; /* Add more space on the right */
+        }
+
+        .username {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-align: right;
+            margin-right: 40px; /* Increased margin to create space from logout button */
+        }
+
+        .employee-img {
+            height: 50px;
+            width: 50px;
+            border-radius: 50%;
+        }
+
+        .content {
+            padding: 30px 20px;
+            text-align: center;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin: 40px auto;
+            max-width: 700px;
+        }
+
+        .content h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .content p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .return-button-container {
+            position: fixed;
+            bottom: 33vh;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .return-button-container .logout-button {
+            background-color: #28a745;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 18px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .return-button-container .logout-button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="Logo.png" alt="Logo">
+        <h1>Fast Finances</h1>
+        <button class="logout-button" onclick="logout()">Log Out</button>
+        
+        <!-- User Info Section (Username and Profile Image) -->
+        <div class="user-info">
+            <div class="username" id="username-display">John Doe</div>
+            <img src="Admin.png" alt="Employee" class="employee-img">
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>Email Submission Successful</h1>
+        <p>Your email has been successfully submitted.</p>
+        <p>Thank you for using Fast Finances.</p>
+    </div>
+
+    <div class="return-button-container">
+        <button class="logout-button" onclick="window.location.href='Admin-Dashboard.html'">Return to Dashboard</button>
+    </div>
+
+    <script>
+        // Logout function
+        function logout() {
+            window.location.href = 'Login.html';
+        }
+
+        // Get the current logged-in user from localStorage
+        function getCurrentUser() {
+            const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+            return currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'Guest';
+        }
+
+        // Display username dynamically
+        document.getElementById("username-display").textContent = getCurrentUser();
+    </script>
+</body>
+</html>
