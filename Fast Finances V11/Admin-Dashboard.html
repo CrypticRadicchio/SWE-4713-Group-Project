@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            position: relative;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding-top: 90px;
+            height: 100vh;
+            box-sizing: border-box;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: transform 0.3s ease;
+            z-index: 900;
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .menu-item:hover {
+            background-color: #34495e;
+        }
+
+        .menu-item a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            font-size: 16px;
+        }
+
+        .menu-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Header Styling */
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+            left: 0;
+        }
+
+        .header.sidebar-open {
+            left: 250px;
+            width: calc(100% - 250px);
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .header-title {
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+
+        /* Header Controls Section */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* User Info Section */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .user-info img {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-size: 16px;
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 90px;
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: calc(100vh - 90px);
+            transition: margin-left 0.3s ease;
+            gap: 20px;
+        }
+
+        .main-content.sidebar-open {
+            margin-left: 0;
+        }
+
+        /* Financial Ratios Container */
+        .ratios-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* Ratio Box Styles */
+        .ratio-box {
+            width: 300px;
+            min-height: 150px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 4px solid;
+        }
+
+        .ratio-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: inherit;
+        }
+
+        .ratio-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .ratio-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .ratio-value {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: #2c3e50;
+        }
+
+        .ratio-status {
+            font-size: 0.9rem;
+            text-align: right;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        /* Color classes for ratio boxes */
+        .ratio-green {
+            border-color: #28a745;
+        }
+
+        .ratio-yellow {
+            border-color: #ffc107;
+        }
+
+        .ratio-red {
+            border-color: #dc3545;
+        }
+
+        /* Tooltip styles */
+        .ratio-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .ratio-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .ratio-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Message Center */
+        .message-center {
+            width: 100%;
+            max-width: 1200px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: auto;
+            margin-bottom: 20px;
+            color: white;
+            background-color: #2c3e50;
+            text-align: center;
+        }
+
+        .message-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+
+        /* Empty Center Content */
+        .empty-center {
+            text-align: center;
+            color: #7f8c8d;
+        }
+
+        .empty-center h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .empty-center p {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        /* User ID Display */
+        .user-id-display {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 123, 255, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .ratio-box {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header" id="header">
+        <button class="hamburger" id="hamburger">☰</button>
+        <div style="display: flex; align-items: center;">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <h1 class="header-title">Fast Finances</h1>
+        </div>
+        <div class="header-controls">
+            <div class="user-info">
+                <img src="Admin.png" alt="User Picture" id="user-pic">
+                <div class="user-name" id="username">Loading Admin...</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="Admin_Add_Account.html">
+                    <i class="fas fa-user-plus"></i>Create User
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="Admin-Employee-Roster-View.html">
+                    <i class="fas fa-users"></i>User Roster
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="Admin-Pending-Roster-View.html">
+                    <i class="fas fa-user-clock"></i>Pending Roster
+            
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="Admin-Expired-Passwords-Report.html">
+                    <i class="fas fa-lock"></i>Expired Password Report
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="Admin-Email-Prompt.html">
+                    <i class="fas fa-envelope"></i>Email
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="Admin_Accountants_Roster.html">
+                    <i class="fas fa-chart-line"></i>Chart of Accounts
+                </a>
+            </li>
+            
+           
+            <li class="menu-item">
+                <a href="Admin-Journal.html">
+                    <i class="fas fa-book"></i>Journal
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="Admin-Metrics.html">
+                    <i class="fas fa-file-invoice-dollar"></i>Financial Statements
+                </a>
+             <li class="menu-item">
+                <a href="Admin-Event-Log.html">
+                    <i class="fas fa-history"></i>Event Log
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="ratios-container" id="ratios-container">
+            <div class="loading">Loading financial ratios...</div>
+        </div>
+        
+        <div class="message-center">
+            <div class="message-title">Message Center</div>
+            <div id="message-content">No new messages</div>
+        </div>
+    </div>
+
+    <div class="user-id-display" id="user-id-display"></div>
+
+    <script>
+        function logout() {
+            // Clear user session
+            sessionStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
+        }
+
+        // Display the currently logged in user
+        function displayLoggedInUser() {
+            try {
+                const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                                 JSON.parse(localStorage.getItem("currentUser"));
+                
+                if (currentUser) {
+                    const displayName = currentUser.first_name 
+                        ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
+                        : currentUser.username || currentUser.id || "Administrator";
+                    document.getElementById('username').textContent = displayName;
+                    
+                    // Update profile picture if available
+                    if (currentUser.profile_pic) {
+                        document.getElementById('user-pic').src = currentUser.profile_pic;
+                    }
+
+                    // Display user ID in bottom right corner
+                    if (currentUser.username) {
+                        document.getElementById('user-id-display').textContent = `User: ${currentUser.username}`;
+                    }
+                } else {
+                    document.getElementById('username').textContent = "Administrator";
+                    // If no user found, redirect to login
+                    window.location.href = 'Login.html';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                document.getElementById('username').textContent = "Administrator";
+            }
+        }
+
+        // Toggle sidebar for mobile
+        function setupSidebarToggle() {
+            const hamburger = document.getElementById('hamburger');
+            const sidebar = document.getElementById('sidebar');
+            const header = document.getElementById('header');
+            const mainContent = document.getElementById('main-content');
+
+            hamburger.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                header.classList.toggle('sidebar-open');
+                mainContent.classList.toggle('sidebar-open');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    const isClickInsideSidebar = sidebar.contains(event.target);
+                    const isClickOnHamburger = hamburger.contains(event.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnHamburger) {
+                        sidebar.classList.remove('open');
+                        header.classList.remove('sidebar-open');
+                        mainContent.classList.remove('sidebar-open');
+                    }
+                }
+            });
+        }
+
+        // Fetch financial ratios from API
+        async function fetchFinancialRatios() {
+            try {
+                const response = await fetch('https://fast-finance-e250d1a7d65a.herokuapp.com/ratios');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const ratios = await response.json();
+                return ratios;
+            } catch (error) {
+                console.error('Error fetching financial ratios:', error);
+                return null;
+            }
+        }
+
+        // Create tooltip text based on ratio name
+        function getTooltipText(ratioName) {
+            const tooltips = {
+                'Current Ratio': 'Measures a company\'s ability to pay short-term obligations with current assets. Higher is better.',
+                'Return on Assets': 'Shows how profitable a company is relative to its total assets. Higher is better.',
+                'Return on Equity': 'Measures profitability by revealing how much profit a company generates with shareholders\' money.',
+                'Net Profit Margin': 'Percentage of revenue remaining after all expenses have been deducted.',
+                'Asset Turnover': 'Measures a firm\'s efficiency at using its assets in generating sales.',
+                'Quick Ratio': 'Measures a company\'s ability to meet short-term obligations with its most liquid assets.'
+            };
+            
+            return tooltips[ratioName] || 'Financial performance indicator.';
+        }
+
+        // Display financial ratios
+        function displayFinancialRatios(ratios) {
+            const container = document.getElementById('ratios-container');
+            
+            if (!ratios || ratios.length === 0) {
+                container.innerHTML = '<div class="empty-center"><p>No financial ratios data available</p></div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            ratios.forEach(ratio => {
+                const [name, value, status] = ratio;
+                const colorClass = `ratio-${status}`;
+                const tooltipText = getTooltipText(name);
+                
+                const ratioBox = document.createElement('div');
+                ratioBox.className = `ratio-box ${colorClass} ratio-tooltip`;
+                ratioBox.innerHTML = `
+                    <div class="ratio-title">${name}</div>
+                    <div class="ratio-value">${value}</div>
+                    <div class="ratio-status">Status: ${status}</div>
+                    <span class="tooltip-text">${tooltipText}</span>
+                `;
+                
+                container.appendChild(ratioBox);
+            });
+        }
+
+        // Update ratios periodically
+        function startRatioUpdates() {
+            // Initial load
+            fetchFinancialRatios()
+                .then(ratios => displayFinancialRatios(ratios))
+                .catch(error => console.error('Error:', error));
+            
+            // Update every 5 minutes (300000 ms)
+            setInterval(() => {
+                fetchFinancialRatios()
+                    .then(ratios => displayFinancialRatios(ratios))
+                    .catch(error => console.error('Error:', error));
+            }, 300000);
+        }
+
+        // Initialize the page
+        window.onload = function() {
+            displayLoggedInUser();
+            setupSidebarToggle();
+            startRatioUpdates();
+        };
+    </script>
+</body>
+</html>

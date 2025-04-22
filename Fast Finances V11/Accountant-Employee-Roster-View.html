@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accountant Employee Roster</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+        .header-title {
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+            margin-left: 50px;
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        .user-info img {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+        }
+        .user-name {
+            font-size: 16px;
+            color: white;
+            font-weight: 500;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .container {
+            padding: 100px 20px 80px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: calc(100vh - 180px);
+            position: relative;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-modify {
+            background-color: #ffc107;
+            color: white;
+        }
+        .btn-retry {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .back-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .refresh-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        .action-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f7f7f7;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            border-top: 1px solid #ddd;
+            z-index: 999;
+            gap: 10px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .status-active {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .status-inactive {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .status-suspended {
+            color: #ff9800;
+            font-weight: bold;
+        }
+        .user-checkbox {
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+        /* Password expiration styling */
+        .expiration-soon {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        .expiration-past {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .expiration-good {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .btn-extend {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="Logo.png" alt="Logo" class="logo">
+        <h1 class="header-title">Fast Finances</h1>
+        <div class="header-controls">
+            <div class="user-info">
+                <img src="Accountant.png" alt="User Picture">
+                <div class="user-name" id="Accountant-username">Loading Accountant...</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Employee Roster</h2>
+        
+        <div id="loading-spinner" class="spinner" style="display: none;"></div>
+        
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        <div id="success-message" class="status-message success"></div>
+        <div id="warning-message" class="status-message warning"></div>
+        
+        <button class="refresh-btn" onclick="fetchUsers()">Refresh Data</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Account Status</th>
+                    <th>Password Expires</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="employee-table-body">
+                <tr>
+                    <td colspan="8" style="text-align: center;">Loading employee data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-add" onclick="window.location.href='Accountant_add_account.html'">Add User</button>
+        <button class="btn back-btn" onclick="window.location.href='Accountant-Dashboard.html'">Back</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users';
+        const API_GET_USER = 'https://fast-finance-e250d1a7d65a.herokuapp.com/users/new_user/fetch_one?email=';
+        let users = [];
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Get password expiration status and styling class
+        function getPasswordExpirationStatus(expiryDate) {
+            if (!expiryDate) return { text: 'Never', class: 'expiration-good' };
+            
+            const now = new Date();
+            const expiry = new Date(expiryDate);
+            const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return { text: `${formatDate(expiryDate)} (Expired)`, class: 'expiration-past' };
+            } else if (diffDays <= 7) {
+                return { text: `${formatDate(expiryDate)} (${diffDays} days)`, class: 'expiration-soon' };
+            } else {
+                return { text: formatDate(expiryDate), class: 'expiration-good' };
+            }
+        }
+
+        function getAccountStatus(user) {
+            const now = new Date();
+            const start = user.suspension_start ? new Date(user.suspension_start) : null;
+            const end = user.suspension_end ? new Date(user.suspension_end) : null;
+            
+            if (start && end && now >= start && now <= end) {
+                return {
+                    class: 'status-suspended',
+                    text: 'Suspended'
+                };
+            }
+            
+            return {
+                class: user.status ? 'status-active' : 'status-inactive',
+                text: user.status ? 'Active' : 'Inactive'
+            };
+        }
+
+        const elements = {
+            spinner: document.getElementById('loading-spinner'),
+            errorMessage: document.getElementById('error-message'),
+            successMessage: document.getElementById('success-message'),
+            warningMessage: document.getElementById('warning-message'),
+            tableBody: document.getElementById('employee-table-body'),
+            AccountantUsername: document.getElementById('Accountant-username')
+        };
+
+        function displayLoggedInUser() {
+            try {
+                const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                                 JSON.parse(localStorage.getItem("currentUser"));
+                
+                if (currentUser) {
+                    const displayName = currentUser.first_name 
+                        ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
+                        : currentUser.username || currentUser.user_id || "Accountant";
+                    elements.AccountanttUsername.textContent = displayName;
+                    
+                    if (currentUser.profile_picture) {
+                        document.querySelector('.user-info img').src = currentUser.profile_picture;
+                    }
+                } else {
+                    elements.AccountantUsername.textContent = "Accountant";
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                elements.AccountantUsername.textContent = "Accountant";
+            }
+        }
+
+        async function fetchUsers() {
+            elements.spinner.style.display = 'block';
+            hideAllMessages();
+            
+            try {
+                const response = await fetch(API_BASE_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                users = Array.isArray(data) ? data : (data.users || []);
+                
+                // Ensure Password_Expiration field is properly mapped
+                users = users.map(user => ({
+                    ...user,
+                    Password_Expiration: user.Password_Expiration || user.password_expiration || null
+                }));
+                
+                if (users.length === 0) {
+                    showWarning("No users found in the system");
+                    elements.tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No users found</td></tr>';
+                } else {
+                    populateTable(users);
+                    showSuccess(`Loaded ${users.length} users successfully`);
+                }
+            } catch (error) {
+                handleFetchError(error);
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        function populateTable(data) {
+            const tableBody = document.getElementById('employee-table-body');
+            tableBody.innerHTML = '';
+
+            data.forEach(user => {
+                const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown';
+                const role = user.role || 'User';
+                const status = getAccountStatus(user);
+                const expiration = getPasswordExpirationStatus(user.Password_Expiration);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" class="user-checkbox" data-id="${user.user_id}" data-email="${user.email}"></td>
+                    <td>${user.user_id || user.id || 'N/A'}</td>
+                    <td>${fullName}</td>
+                    <td>${role}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td class="${status.class}">${status.text}</td>
+                    <td class="${expiration.class}">${expiration.text}</td>
+                    <td>
+                        
+                      
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function extendPasswordExpiration(userId, email) {
+            if (!confirm("Extend password expiration by 6 months for this user?")) return;
+            
+            elements.spinner.style.display = 'block';
+            hideAllMessages();
+            
+            try {
+                // Calculate new expiration date (6 months from now)
+                const expirationDate = new Date();
+                expirationDate.setMonth(expirationDate.getMonth() + 6);
+                const formattedExpirationDate = expirationDate.toISOString().split('T')[0];
+                
+                const response = await fetch(`${API_BASE_URL}/update_one?user_id=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify({
+                        password_expiration: formattedExpirationDate
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to update password expiration (Status: ${response.status})`);
+                }
+
+                showSuccess("Password expiration extended successfully");
+                fetchUsers(); // Refresh the data
+            } catch (error) {
+                console.error('Error extending password expiration:', error);
+                showError(error.message || "Failed to extend password expiration");
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        async function modifyUser(email) {
+            elements.spinner.style.display = 'block';
+            hideAllMessages();
+            
+            try {
+                const user = users.find(u => u.email === email);
+                
+                if (user) {
+                    sessionStorage.setItem("selectedUserForEdit", JSON.stringify(user));
+                    window.location.href = 'Admin-Modify-User.html';
+                } else {
+                    const response = await fetch(`${API_GET_USER}${encodeURIComponent(email)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getAuthToken()}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const userData = await response.json();
+                    sessionStorage.setItem("selectedUserForEdit", JSON.stringify(userData));
+                    window.location.href = 'Admin-Modify-User.html';
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                showError("Failed to fetch user details. Please try again.");
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        function getAuthToken() {
+            const user = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                        JSON.parse(localStorage.getItem("currentUser"));
+            return user?.token || '';
+        }
+
+        function handleFetchError(error) {
+            console.error('API Error:', error);
+            let errorMsg = error.message || 'Failed to fetch data';
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMsg = "Cannot connect to the server. Please check your internet connection.";
+            }
+
+            showError(errorMsg);
+            elements.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: red;">
+                        ${errorMsg}
+                        <br>
+                        <button class="btn btn-retry" onclick="fetchUsers()">Retry Now</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            elements.successMessage.textContent = message;
+            elements.successMessage.style.display = 'block';
+            setTimeout(() => elements.successMessage.style.display = 'none', 3000);
+        }
+
+        function showWarning(message) {
+            elements.warningMessage.textContent = message;
+            elements.warningMessage.style.display = 'block';
+            setTimeout(() => elements.warningMessage.style.display = 'none', 3000);
+        }
+
+        function hideAllMessages() {
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+            elements.warningMessage.style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
+        }
+
+        window.onload = () => {
+            displayLoggedInUser();
+            fetchUsers();
+        };
+    </script>
+</body>
+</html>

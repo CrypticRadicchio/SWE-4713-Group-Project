@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Journal Entry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            height: 30px;
+            margin-right: 15px;
+        }
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .page-title {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .transaction-list {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .transaction-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .credit-transaction {
+            margin-left: 50px;
+            background-color: #f0f8ff;
+            border-left: 4px solid #007bff;
+        }
+        .transaction-item > div {
+            flex: 1;
+        }
+        .btn {
+            padding: 10px 15px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background: #007bff;
+        }
+        .btn-primary:hover {
+            background: #0069d9;
+        }
+        .btn-add-debit {
+            background: #28a745;
+        }
+        .btn-add-debit:hover {
+            background: #218838;
+        }
+        .btn-add-debit:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+        .btn-add-credit {
+            background: #17a2b8;
+        }
+        .btn-add-credit:hover {
+            background: #138496;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-remove {
+            background: #dc3545;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            color: white;
+            border: none;
+            font-size: 16px;
+            line-height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .btn-remove:hover {
+            background: #c82333;
+        }
+        .error {
+            color: #dc3545;
+            padding: 10px;
+            background: #ffeeee;
+            border: 1px solid #ffdddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.3);
+            border-radius: 50%;
+            border-top-color: #007bff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .login-status {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .logged-in {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .logged-out {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .invalid {
+            border-color: #dc3545 !important;
+        }
+        .balance-display {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .balanced {
+            color: #28a745;
+        }
+        .unbalanced {
+            color: #dc3545;
+        }
+        .type-disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .journal-type-container {
+            margin-bottom: 20px;
+        }
+        .journal-type-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .journal-type-select {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Fast Finances Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img src="Management.png" alt="Management Profile">
+            <span id="username">Management</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Create Journal Entry</h1>
+        
+        <div id="loginStatus" class="login-status logged-in"></div>
+        
+        <div id="errorMessage" class="error"></div>
+        
+        <form id="journalForm">
+            <div class="form-group">
+                <label for="entryDate">Date</label>
+                <input type="date" id="entryDate" required>
+            </div>
+            
+            <div class="journal-type-container">
+                <div class="journal-type-label">Journal Type</div>
+                <select id="journalType" class="journal-type-select" required>
+                    <option value="normal" selected>Normal</option>
+                    <option value="adjusting">Adjusting</option>
+                    <option value="closing">Closing</option>
+                    <option value="reversing">Reversing</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Transactions</label>
+                <div class="transaction-list" id="transactionsContainer">
+                    <!-- Transactions will be added here -->
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="btn btn-add-debit" id="addDebitBtn">+ Add Debit</button>
+                    <button type="button" class="btn btn-add-credit" id="addCreditBtn">+ Add Credit</button>
+                </div>
+                
+                <!-- Balance display -->
+                <div id="balanceDisplay" class="balance-display">
+                    Total Debits: $<span id="totalDebits">0.00</span> | 
+                    Total Credits: $<span id="totalCredits">0.00</span> | 
+                    Balance: $<span id="balanceAmount">0.00</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" rows="3" placeholder="Enter a description for this journal entry"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span id="submitText">Create Journal Entry</span>
+                    <span id="submitSpinner" class="loading" style="display: none;"></span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='Management-Journal.html'">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Global variables
+        let accounts = [];
+        let currentUser = null;
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[INIT] Page loaded - starting initialization');
+            
+            // Load current user
+            loadCurrentUser();
+            
+            // Load accounts
+            loadAccounts();
+            
+            // Set default date to today
+            document.getElementById('entryDate').valueAsDate = new Date();
+            console.log('[UI] Set default date to today');
+            
+            // Add first debit transaction
+            addTransaction('DEBIT');
+            
+            // Setup event listeners for add buttons
+            document.getElementById('addDebitBtn').addEventListener('click', function() {
+                addTransaction('DEBIT');
+            });
+            
+            document.getElementById('addCreditBtn').addEventListener('click', function() {
+                addTransaction('CREDIT');
+            });
+            
+            // Form submission handler
+            document.getElementById('journalForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('[EVENT] Form submit triggered');
+                submitJournalEntry();
+            });
+            
+            console.log('[INIT] Initialization complete');
+        });
+
+        // Get currently selected accounts in the journal entry
+        function getSelectedAccounts() {
+            const selectedAccounts = new Set();
+            document.querySelectorAll('.transaction-item .account-select').forEach(select => {
+                if (select.value) {
+                    selectedAccounts.add(select.value);
+                }
+            });
+            return selectedAccounts;
+        }
+
+        // Load current user from localStorage
+        function loadCurrentUser() {
+            console.log('[AUTH] Loading current user from localStorage...');
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                console.log('[AUTH] User loaded successfully:', {
+                    username: currentUser.username,
+                    user_id: currentUser.user_id,
+                    role: currentUser.role
+                });
+                document.getElementById('username').textContent = currentUser.name || currentUser.username || "Management";
+                updateLoginStatus();
+            } else {
+                console.warn('[AUTH] No user data found in localStorage');
+                currentUser = null;
+                updateLoginStatus();
+                showError("Please login to create journal entries");
+            }
+        }
+
+        // Update login status display
+        function updateLoginStatus() {
+            const loginStatusElement = document.getElementById('loginStatus');
+            
+            if (currentUser) {
+                const statusText = `Logged in as ${currentUser.name || currentUser.username || "User"} (${currentUser.role || 'user'})`;
+                loginStatusElement.textContent = statusText;
+                loginStatusElement.className = 'login-status logged-in';
+                console.log('[AUTH] Login status updated:', statusText);
+            } else {
+                loginStatusElement.textContent = 'You are not logged in. Please login to submit journal entries.';
+                loginStatusElement.className = 'login-status logged-out';
+                document.getElementById('submitBtn').disabled = true;
+                console.log('[AUTH] User not logged in, submit button disabled');
+            }
+        }
+
+        // Logout function
+        function logout() {
+            console.log('[AUTH] Logging out user...');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'Login.html';
+        }
+
+        // Load accounts from API
+        function loadAccounts() {
+            console.log('[DATA] Loading accounts from API...');
+            
+            if (!currentUser) {
+                console.log('[DATA] Not logged in - cannot load accounts');
+                showError("Please login to load accounts");
+                accounts = [];
+                return;
+            }
+            
+            fetch('https://fast-finance-e250d1a7d65a.herokuapp.com/accounts', {
+                headers: {
+                    'Authorization': `Bearer ${currentUser.token || ''}`
+                }
+            })
+            .then(response => {
+                console.log('[API] Accounts response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                accounts = data;
+                console.log('[DATA] Accounts loaded successfully. Count:', accounts.length);
+                console.debug('[DATA] First few accounts:', accounts.slice(0, 3));
+                
+                // Refresh transaction dropdowns if they exist
+                refreshAccountDropdowns();
+            })
+            .catch(error => {
+                console.error('[ERROR] Account load failed:', error);
+                showError("Failed to load accounts. Please try again.");
+                accounts = [];
+            });
+        }
+
+        // Refresh all account dropdowns in existing transactions
+        function refreshAccountDropdowns() {
+            const selectedAccounts = getSelectedAccounts();
+            const dropdowns = document.querySelectorAll('.transaction-item select.account-select');
+            
+            dropdowns.forEach(dropdown => {
+                const currentValue = dropdown.value;
+                dropdown.innerHTML = '<option value="">Select Account</option>';
+                
+                // Filter out already selected accounts
+                const availableAccounts = accounts.filter(account => 
+                    !selectedAccounts.has(account.account_name) || account.account_name === currentValue
+                );
+                
+                availableAccounts.forEach(account => {
+                    const option = document.createElement('option');
+                    option.value = account.account_name;
+                    option.textContent = account.account_name;
+                    option.dataset.id = account.account_id;
+                    dropdown.appendChild(option);
+                });
+                
+                // Restore previous selection if it exists
+                if (currentValue) {
+                    dropdown.value = currentValue;
+                    // Update the reference field if account is selected
+                    const referenceInput = dropdown.closest('.transaction-item').querySelector('.reference-input');
+                    if (referenceInput) {
+                        const selectedOption = dropdown.options[dropdown.selectedIndex];
+                        if (selectedOption.dataset.id) {
+                            referenceInput.value = selectedOption.dataset.id;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Add a new transaction
+        function addTransaction(type) {
+            const container = document.getElementById('transactionsContainer');
+            const transactionId = Date.now();
+            
+            console.log('[UI] Adding new transaction with ID:', transactionId, 'Type:', type);
+            
+            const transaction = document.createElement('div');
+            transaction.className = type === 'CREDIT' ? 'transaction-item credit-transaction' : 'transaction-item';
+            transaction.id = 'transaction-' + transactionId;
+            
+            transaction.innerHTML = `
+                <div>
+                    <label>Account</label>
+                    <select class="account-select" required>
+                        <option value="">Select Account</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Amount</label>
+                    <input type="number" step="0.01" placeholder="0.00" class="amount-input" required>
+                </div>
+                <div>
+                    <label>Type</label>
+                    <select class="type-select" required ${type ? 'disabled' : ''}>
+                        <option value="">Select</option>
+                        <option value="CREDIT" ${type === 'CREDIT' ? 'selected' : ''}>Credit</option>
+                        <option value="DEBIT" ${type === 'DEBIT' ? 'selected' : ''}>Debit</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Reference</label>
+                    <input type="number" placeholder="Account ID" class="reference-input" required>
+                </div>
+                <button type="button" class="btn-remove" onclick="removeTransaction('transaction-${transactionId}', '${type}')">×</button>
+            `;
+            
+            // Get the account select element
+            const accountSelect = transaction.querySelector('.account-select');
+            
+            // Get currently selected accounts (excluding this new one)
+            const selectedAccounts = getSelectedAccounts();
+            
+            // Populate with available accounts
+            accounts.forEach(account => {
+                if (!selectedAccounts.has(account.account_name)) {
+                    const option = document.createElement('option');
+                    option.value = account.account_name;
+                    option.textContent = account.account_name;
+                    option.dataset.id = account.account_id;
+                    accountSelect.appendChild(option);
+                }
+            });
+            
+            // When account is selected, update the reference field with account ID
+            accountSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const accountId = selectedOption.dataset.id;
+                const referenceInput = this.closest('.transaction-item').querySelector('.reference-input');
+                if (referenceInput && accountId) {
+                    referenceInput.value = accountId;
+                    console.log('[UI] Account selected:', selectedOption.text, "ID:", accountId);
+                }
+                
+                // Refresh all account dropdowns to update available options
+                refreshAccountDropdowns();
+                updateBalanceDisplay();
+            });
+            
+            // Add event listeners for amount changes
+            const amountInput = transaction.querySelector('.amount-input');
+            amountInput.addEventListener('input', updateBalanceDisplay);
+            
+            container.appendChild(transaction);
+            console.log('[UI] Transaction added successfully. Total transactions:', document.querySelectorAll('.transaction-item').length);
+            
+            // Update balance display
+            updateBalanceDisplay();
+        }
+
+        // Remove a transaction
+        function removeTransaction(id, type) {
+            console.log('[UI] Removing transaction:', id, 'Type:', type);
+            const transaction = document.getElementById(id);
+            if (transaction) {
+                transaction.remove();
+                console.log('[UI] Transaction removed. Remaining transactions:', document.querySelectorAll('.transaction-item').length);
+                
+                // Ensure at least one transaction remains
+                if (document.querySelectorAll('.transaction-item').length === 0) {
+                    console.log('[UI] No transactions left, adding a new one');
+                    addTransaction('DEBIT');
+                }
+                
+                // Refresh account dropdowns and update balance
+                refreshAccountDropdowns();
+                updateBalanceDisplay();
+            }
+        }
+
+        // Calculate and update the balance display
+        function updateBalanceDisplay() {
+            let totalDebits = 0;
+            let totalCredits = 0;
+            
+            document.querySelectorAll('.transaction-item').forEach(item => {
+                const amountInput = item.querySelector('.amount-input');
+                const typeSelect = item.querySelector('.type-select');
+                
+                if (amountInput && amountInput.value && typeSelect && typeSelect.value) {
+                    const amount = parseFloat(amountInput.value) || 0;
+                    
+                    if (typeSelect.value === 'DEBIT') {
+                        totalDebits += amount;
+                    } else if (typeSelect.value === 'CREDIT') {
+                        totalCredits += amount;
+                    }
+                }
+            });
+            
+            const balance = totalDebits - totalCredits;
+            
+            // Update display
+            document.getElementById('totalDebits').textContent = totalDebits.toFixed(2);
+            document.getElementById('totalCredits').textContent = totalCredits.toFixed(2);
+            document.getElementById('balanceAmount').textContent = Math.abs(balance).toFixed(2);
+            
+            // Style based on balance
+            const balanceDisplay = document.getElementById('balanceDisplay');
+            if (Math.abs(balance) < 0.01) { // Account for floating point precision
+                balanceDisplay.classList.remove('unbalanced');
+                balanceDisplay.classList.add('balanced');
+                document.getElementById('balanceAmount').textContent = '0.00';
+            } else {
+                balanceDisplay.classList.remove('balanced');
+                balanceDisplay.classList.add('unbalanced');
+            }
+        }
+
+        // Submit journal entry
+        function submitJournalEntry() {
+            console.log('[SUBMIT] Starting journal entry submission...');
+            
+            // Clear previous errors
+            clearValidationErrors();
+            
+            // Validate user
+            if (!currentUser) {
+                const errorMsg = "User not logged in";
+                console.error('[AUTH]', errorMsg);
+                showError(errorMsg);
+                return;
+            }
+            
+            // Get form data
+            const date = document.getElementById('entryDate').value;
+            const journalType = document.getElementById('journalType').value;
+            const description = document.getElementById('description').value;
+            console.log('[DATA] Using journal date:', date, 'Type:', journalType, 'Description:', description);
+            
+            // Validate date
+            if (!date) {
+                const errorMsg = "Date is required";
+                console.error('[VALIDATION]', errorMsg);
+                showError(errorMsg);
+                document.getElementById('entryDate').classList.add('invalid');
+                return;
+            }
+            
+            // Validate journal type
+            if (!journalType) {
+                const errorMsg = "Journal type is required";
+                console.error('[VALIDATION]', errorMsg);
+                showError(errorMsg);
+                document.getElementById('journalType').classList.add('invalid');
+                return;
+            }
+            
+            // Check balance
+            let totalDebits = 0;
+            let totalCredits = 0;
+            
+            document.querySelectorAll('.transaction-item').forEach(item => {
+                const amountInput = item.querySelector('.amount-input');
+                const typeSelect = item.querySelector('.type-select');
+                
+                if (amountInput && amountInput.value && typeSelect && typeSelect.value) {
+                    const amount = parseFloat(amountInput.value) || 0;
+                    
+                    if (typeSelect.value === 'DEBIT') {
+                        totalDebits += amount;
+                    } else if (typeSelect.value === 'CREDIT') {
+                        totalCredits += amount;
+                    }
+                }
+            });
+            
+            const balance = totalDebits - totalCredits;
+            if (Math.abs(balance) >= 0.01) { // Account for floating point precision
+                const errorMsg = "Journal entries must balance (debits must equal credits)";
+                console.error('[VALIDATION]', errorMsg);
+                showError(errorMsg);
+                document.getElementById('balanceDisplay').classList.add('invalid');
+                return;
+            }
+            
+            // Collect transactions
+            const transactions = [];
+            const transactionItems = document.querySelectorAll('.transaction-item');
+            console.log('[DATA] Processing', transactionItems.length, "transactions");
+            
+            let isValid = true;
+            const usedAccounts = new Set();
+            
+            transactionItems.forEach(item => {
+                const accountSelect = item.querySelector('.account-select');
+                const amountInput = item.querySelector('.amount-input');
+                const typeSelect = item.querySelector('.type-select');
+                const referenceInput = item.querySelector('.reference-input');
+                
+                const accountName = accountSelect.value;
+                const amount = amountInput.value;
+                const type = typeSelect.value;
+                const reference = referenceInput.value;
+                
+                console.debug('[DATA] Transaction details:', {
+                    account: accountName, 
+                    amount: amount,
+                    type: type,
+                    reference: reference
+                });
+                
+                // Validate transaction
+                let transactionValid = true;
+                
+                if (!accountName) {
+                    accountSelect.classList.add('invalid');
+                    transactionValid = false;
+                }
+                
+                if (!amount || isNaN(amount)) {
+                    amountInput.classList.add('invalid');
+                    transactionValid = false;
+                }
+                
+                if (!type || (type !== 'DEBIT' && type !== 'CREDIT')) {
+                    typeSelect.classList.add('invalid');
+                    transactionValid = false;
+                }
+                
+                if (!reference || isNaN(reference)) {
+                    referenceInput.classList.add('invalid');
+                    transactionValid = false;
+                }
+                
+                // Check for duplicate accounts
+                if (usedAccounts.has(accountName)) {
+                    accountSelect.classList.add('invalid');
+                    transactionValid = false;
+                    showError("Each account can only be used once in a journal entry");
+                } else if (accountName) {
+                    usedAccounts.add(accountName);
+                }
+                
+                if (!transactionValid) {
+                    isValid = false;
+                    item.classList.add('invalid');
+                    console.error('[VALIDATION] Invalid transaction fields');
+                } else {
+                    item.classList.remove('invalid');
+                }
+                
+                transactions.push({
+                    date: date,
+                    account_name: accountName,
+                    balance: parseFloat(amount),
+                    side: type.toLowerCase(), // API expects lowercase
+                    post_reference: parseInt(reference)
+                });
+            });
+            
+            if (!isValid) {
+                const errorMsg = "Please correct all invalid fields";
+                console.error('[VALIDATION]', errorMsg);
+                showError(errorMsg);
+                return;
+            }
+            
+            // Check if there are both debits and credits
+            const hasDebits = transactions.some(t => t.side === 'debit');
+            const hasCredits = transactions.some(t => t.side === 'credit');
+            
+            if (!hasDebits || !hasCredits) {
+                const errorMsg = "Journal entry must contain both debit and credit transactions";
+                console.error('[VALIDATION]', errorMsg);
+                showError(errorMsg);
+                return;
+            }
+            
+            // Prepare payload
+            const payload = {
+                transactions: transactions,
+                approved_status: "pending",
+                description: description,
+                journal_type: journalType
+            };
+            
+            console.log('[DATA] Final payload:', payload);
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            submitBtn.disabled = true;
+            submitText.textContent = 'Creating...';
+            submitSpinner.style.display = 'inline-block';
+            
+            // Make API request
+            fetch(`https://fast-finance-e250d1a7d65a.herokuapp.com/journal?user_id=${currentUser.user_id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentUser.token || ''}`
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                console.log('[API] Response status:', response.status);
+                
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.detail || 'Failed to create journal entry');
+                    });
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log('[API] Success response:', result);
+                console.log('[NAV] Redirecting to Journal-Entries.html');
+                window.location.href = 'Management-Journal.html';
+            })
+            .catch(error => {
+                console.error('[ERROR] Submission failed:', error);
+                showError(error.message);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitText.textContent = 'Create Journal Entry';
+                submitSpinner.style.display = 'none';
+                console.log('[UI] Reset submit button state');
+            });
+        }
+
+        // Clear validation errors
+        function clearValidationErrors() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('entryDate').classList.remove('invalid');
+            document.getElementById('journalType').classList.remove('invalid');
+            document.getElementById('balanceDisplay').classList.remove('invalid');
+            
+            document.querySelectorAll('.invalid').forEach(el => {
+                el.classList.remove('invalid');
+            });
+        }
+
+        // Show error message
+        function showError(message) {
+            console.error('[UI] Displaying error:', message);
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
