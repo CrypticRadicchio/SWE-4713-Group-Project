@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Pending Users</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .header-title {
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+            margin-left: 50px;
+        }
+
+        /* User Info Section */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .user-info img {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-size: 16px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Container */
+        .container {
+            padding: 100px 20px 80px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: calc(100vh - 180px);
+            position: relative;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-add {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-deactivate {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-modify {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        .btn-allow {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-suspend {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-retry {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .back-btn {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .refresh-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f7f7f7;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            border-top: 1px solid #ddd;
+            z-index: 999;
+            gap: 10px;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error message styling */
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* Status messages */
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        /* Status indicators */
+        .status-active {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-inactive {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        /* Password expiration styling */
+        .expiration-soon {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        
+        .expiration-past {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .expiration-good {
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <img src="Logo.png" alt="Logo" class="logo">
+        <h1 class="header-title">Fast Finances</h1>
+        <div class="header-controls">
+            <div class="user-info">
+                <img src="Management.png" alt="User Picture">
+                <div class="user-name" id="Management-username">Management</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container">
+        <h2>Pending Employee Roster</h2>
+        
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="spinner" style="display: none;"></div>
+        
+        <!-- Status Messages -->
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        <div id="success-message" class="status-message success" style="display: none;"></div>
+        <div id="warning-message" class="status-message warning" style="display: none;"></div>
+        
+        <!-- Refresh Button -->
+        <button class="refresh-btn" onclick="fetchPendingUsers()">Refresh Data</button>
+        
+        <!-- Employee Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Password Expires</th>
+                </tr>
+            </thead>
+            <tbody id="employee-table-body">
+                <tr>
+                    <td colspan="7" style="text-align: center;">Loading pending users...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Action Buttons (Fixed at Bottom) -->
+    <div class="action-buttons">
+       
+        <button class="btn back-btn" onclick="window.location.href='Management-Dashboard.html'">Back to Dashboard</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com';
+        let pendingUsers = [];
+        let currentManagement = null;
+
+        // Generate user ID based on first initial, last name, and date (mm/yy)
+        function generateUserId(firstName, lastName) {
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            const firstInitial = firstName ? firstName.charAt(0).toLowerCase() : 'u';
+            const cleanLastName = lastName ? lastName.toLowerCase().replace(/\s+/g, '') : 'user';
+            return `${firstInitial}${cleanLastName}${month}${year}`;
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Get password expiration status and styling class - UPDATED TO USE Password_Expiration
+        function getPasswordExpirationStatus(expiryDate) {
+            if (!expiryDate) return { text: 'Never', class: 'expiration-good' };
+            
+            const now = new Date();
+            const expiry = new Date(expiryDate);
+            const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                return { text: `${formatDate(expiryDate)} (Expired)`, class: 'expiration-past' };
+            } else if (diffDays <= 7) {
+                return { text: `${formatDate(expiryDate)} (${diffDays} days)`, class: 'expiration-soon' };
+            } else {
+                return { text: formatDate(expiryDate), class: 'expiration-good' };
+            }
+        }
+
+        // DOM Elements
+        const elements = {
+            spinner: document.getElementById('loading-spinner'),
+            errorMessage: document.getElementById('error-message'),
+            successMessage: document.getElementById('success-message'),
+            warningMessage: document.getElementById('warning-message'),
+            tableBody: document.getElementById('employee-table-body'),
+            ManagementUsername: document.getElementById('Management-username')
+        };
+
+        // Display the currently logged in user
+        function displayLoggedInUser() {
+            try {
+                currentManagement = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                             JSON.parse(localStorage.getItem("currentUser"));
+                
+                if (currentManagementn) {
+                    const displayName = currentManagement.first_name 
+                        ? `${currentManagement.first_name} ${currentManagement.last_name || ''}`.trim()
+                        : currentManagement.username || currentManagement.user_id || "Management";
+                    elements.ManagementUsername.textContent = displayName;
+                    
+                    if (currentManagement.profile_pic) {
+                        document.querySelector('.user-info img').src = currentManagement.profile_pic;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Fetch pending users from API - UPDATED TO HANDLE Password_Expiration
+        async function fetchPendingUsers() {
+            showLoading();
+            hideAllMessages();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/new_user`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                pendingUsers = Array.isArray(data) ? data : (data.users || []);
+                
+                // Ensure Password_Expiration field is properly mapped
+                pendingUsers = pendingUsers.map(user => ({
+                    ...user,
+                    Password_Expiration: user.Password_Expiration || user.password_expiration || null
+                }));
+                
+                if (pendingUsers.length === 0) {
+                    showWarning("No pending users found");
+                    renderEmptyTable();
+                } else {
+                    renderUserTable(pendingUsers);
+                    showSuccess(`Loaded ${pendingUsers.length} pending users`);
+                }
+            } catch (error) {
+                handleFetchError(error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Render user table - UPDATED TO USE Password_Expiration
+        function renderUserTable(users) {
+            const tableBody = document.getElementById('employee-table-body');
+            tableBody.innerHTML = '';
+
+            users.forEach(user => {
+                const expiration = getPasswordExpirationStatus(user.Password_Expiration);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" class="user-checkbox" data-id="${user.user_id}" data-email="${user.email || ''}"></td>
+                    <td>${user.user_id}</td>
+                    <td>${user.first_name || ''} ${user.last_name || ''}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${user.role || 'employee'}</td>
+                    <td class="status-pending">Pending</td>
+                    <td class="${expiration.class}">${expiration.text}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Render empty table state
+        function renderEmptyTable() {
+            elements.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center;">No pending users found</td>
+                </tr>
+            `;
+        }
+
+        // Get selected users
+        function getSelectedUsers() {
+            const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showWarning("Please select at least one user");
+                return null;
+            }
+            
+            const selectedUsers = [];
+            checkboxes.forEach(checkbox => {
+                const userId = checkbox.getAttribute('data-id');
+                const email = checkbox.getAttribute('data-email');
+                
+                if (!userId || !email) {
+                    console.error('Invalid user selection data:', {userId, email});
+                    return;
+                }
+                
+                selectedUsers.push({
+                    user_id: userId,
+                    email: email
+                });
+            });
+
+            if (selectedUsers.length === 0) {
+                showWarning("No valid users selected");
+                return null;
+            }
+
+            return selectedUsers;
+        }
+
+        // Approve selected users with user_id generation - UPDATED FOR Password_Expiration
+        async function approveSelectedUsers() {
+            const selectedUsers = getSelectedUsers();
+            if (!selectedUsers) return;
+
+            showLoading();
+            hideAllMessages();
+            
+            try {
+                const approvalResults = [];
+                
+                for (const user of selectedUsers) {
+                    try {
+                        // 1. Fetch complete user data from pending endpoint
+                        const fetchUrl = `${API_BASE_URL}/users/new_user/fetch_one?email=${encodeURIComponent(user.email)}`;
+                        const fetchResponse = await fetch(fetchUrl, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getAuthToken()}`
+                            }
+                        });
+
+                        if (!fetchResponse.ok) {
+                            throw new Error(`Failed to fetch user data (Status: ${fetchResponse.status})`);
+                        }
+
+                        const pendingUserData = await fetchResponse.json();
+
+                        // 2. Generate the new user_id
+                        const newUserId = generateUserId(pendingUserData.first_name, pendingUserData.last_name);
+
+                        // 3. Format the data for the main user creation endpoint
+                        const userCreationData = {
+                            user_id: newUserId,
+                            email: pendingUserData.email,
+                            first_name: pendingUserData.first_name || '',
+                            last_name: pendingUserData.last_name || '',
+                            dob: pendingUserData.dob || '2000-01-01',
+                            hashed_pass: pendingUserData.hashed_pass,
+                            role: pendingUserData.role || 'employee',
+                            security_answers: [
+                                pendingUserData.security_answer_1 || 'default1',
+                                pendingUserData.security_answer_2 || 'default2',
+                                pendingUserData.security_answer_3 || 'default3'
+                            ],
+                            is_active: true,
+                            password_expiry: pendingUserData.Password_Expiration || null
+                        };
+
+                        // 4. Create the user in the main system
+                        const createResponse = await fetch(`${API_BASE_URL}/users?user_id=${user.user_id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getAuthToken()}`
+                            },
+                            body: JSON.stringify(userCreationData)
+                        });
+                        
+                        if (!createResponse.ok) {
+                            throw new Error(`Failed to create user (Status: ${createResponse.status})`);
+                        }
+
+                        // 5. Remove from pending list
+                        const deleteResponse = await fetch(
+                            `${API_BASE_URL}/users/new_user?email=${encodeURIComponent(user.email)}&user_id=${user.user_id}`, 
+                            {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${getAuthToken()}`
+                                }
+                            }
+                        );
+                        
+                        if (!deleteResponse.ok) {
+                            throw new Error(`Failed to remove from pending list (Status: ${deleteResponse.status})`);
+                        }
+
+                        approvalResults.push({
+                            user_id: newUserId,
+                            status: 'success',
+                            message: `User approved successfully with ID: ${newUserId}`
+                        });
+                    } catch (error) {
+                        approvalResults.push({
+                            user_id: user.user_id,
+                            status: 'error',
+                            message: error.message
+                        });
+                    }
+                }
+                
+                // Refresh the list after processing all users
+                await fetchPendingUsers();
+                
+                // Show summary of results
+                const successfulApprovals = approvalResults.filter(r => r.status === 'success');
+                const failedApprovals = approvalResults.filter(r => r.status === 'error');
+                
+                if (failedApprovals.length === 0) {
+                    showSuccess(`Successfully approved ${successfulApprovals.length} user(s)`);
+                } else if (successfulApprovals.length === 0) {
+                    showError(`Failed to approve any users. Errors: ${failedApprovals.map(f => f.message).join('; ')}`);
+                } else {
+                    showWarning(`Approved ${successfulApprovals.length} user(s), but failed to approve ${failedApprovals.length} user(s)`);
+                }
+            } catch (error) {
+                handleFetchError(error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Deny selected users
+        async function denySelectedUsers() {
+            const selectedUsers = getSelectedUsers();
+            if (!selectedUsers) return;
+
+            showLoading();
+            hideAllMessages();
+            
+            try {
+                for (const user of selectedUsers) {
+                    const deleteResponse = await fetch(
+                        `${API_BASE_URL}/users/new_user?email=${encodeURIComponent(user.email)}&user_id=${user.user_id}`, 
+                        {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getAuthToken()}`
+                            }
+                        }
+                    );
+                    
+                    if (!deleteResponse.ok) {
+                        throw new Error(`Failed to deny user ${user.user_id}`);
+                    }
+                }
+                
+                await fetchPendingUsers();
+                showSuccess(`Successfully denied ${selectedUsers.length} user(s)`);
+            } catch (error) {
+                handleFetchError(error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Get auth token
+        function getAuthToken() {
+            const user = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                        JSON.parse(localStorage.getItem("currentUser"));
+            return user?.token || '';
+        }
+
+        // Handle fetch errors
+        function handleFetchError(error) {
+            console.error('API Error:', error);
+            let errorMsg = error.message;
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMsg = "Network error: Cannot connect to server";
+            }
+
+            showError(errorMsg);
+            elements.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; color: red;">
+                        ${errorMsg}
+                        <button class="btn btn-retry" onclick="fetchPendingUsers()">Retry</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Helper functions
+        function showLoading() {
+            elements.spinner.style.display = 'block';
+        }
+
+        function hideLoading() {
+            elements.spinner.style.display = 'none';
+        }
+
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            elements.successMessage.textContent = message;
+            elements.successMessage.style.display = 'block';
+            setTimeout(() => elements.successMessage.style.display = 'none', 5000);
+        }
+
+        function showWarning(message) {
+            elements.warningMessage.textContent = message;
+            elements.warningMessage.style.display = 'block';
+            setTimeout(() => elements.warningMessage.style.display = 'none', 5000);
+        }
+
+        function hideAllMessages() {
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+            elements.warningMessage.style.display = 'none';
+        }
+
+        // Logout Function
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
+        }
+
+        // Initialize the page
+        window.onload = () => {
+            displayLoggedInUser();
+            fetchPendingUsers();
+        };
+    </script>
+</body>
+</html>

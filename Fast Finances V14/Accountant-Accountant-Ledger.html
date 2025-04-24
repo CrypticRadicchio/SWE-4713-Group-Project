@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Ledger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 0 20px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .logo {
+            height: 30px;
+            width: 30px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: normal;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover;
+        }
+        
+        .user-info span {
+            font-size: 14px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .account-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .account-info h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .account-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .detail-item {
+            margin-bottom: 8px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        
+        .btn-back { background-color: #6c757d; }
+        .btn-main-menu { background-color: #007bff; }
+        
+        .edit-history {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        .history-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .history-changes {
+            margin-left: 15px;
+        }
+        
+        .history-change {
+            margin-bottom: 8px;
+            padding-left: 10px;
+            border-left: 3px solid #007bff;
+        }
+        
+        .history-field {
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .button-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .debug-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img src="Accountant.png" alt="employee Profile">
+            <span id="username">employee</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Account Ledger</h2>
+        
+        <div class="account-info" id="accountInfo">
+            <!-- Account details will be populated here -->
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody id="ledgerTableBody">
+                <!-- Ledger entries will be populated here -->
+            </tbody>
+        </table>
+        
+        <div class="edit-history" id="editHistory">
+            <h3>Edit History</h3>
+            <!-- History items will be loaded here -->
+        </div>
+        
+        <div class="button-container">
+            <button class="btn btn-back" onclick="window.location.href='Employee-Accountants-Roster.html'">Back to Roster</button>
+            <button class="btn btn-main-menu" onclick="window.location.href='Employee-Dashboard.html'">Main Menu</button>
+            <button class="btn" onclick="toggleDebugInfo()" style="background-color: #28a745;">Debug Info</button>
+        </div>
+        
+        <div class="debug-info" id="debugInfo">
+            <!-- Debug information will be shown here -->
+        </div>
+    </div>
+
+    <script>
+        // Debug mode flag
+        const DEBUG_MODE = true;
+        
+        // Main initialization function
+        document.addEventListener("DOMContentLoaded", function() {
+            if (DEBUG_MODE) {
+                console.log("Initializing Account Ledger page...");
+            }
+            initializePage();
+        });
+
+        function initializePage() {
+            // Load all required data
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            const userDatabase = JSON.parse(localStorage.getItem("userDatabase"));
+            
+            // Get account data from either localStorage or URL parameters
+            let accountData = getAccountData();
+            
+            if (DEBUG_MODE) {
+                console.log("Account data retrieved:", accountData);
+                console.log("Account database:", accountDatabase);
+            }
+            
+            // Validate data
+            if (!validateData(accountData, accountDatabase)) {
+                return;
+            }
+            
+            // Find the full account data
+            const fullAccountData = findAccountData(accountData.accountNumber, accountDatabase);
+            if (!fullAccountData) {
+                alert('Account not found in database!');
+                window.location.href = 'Employee_Accountants_Roster.html';
+                return;
+            }
+            
+            if (DEBUG_MODE) {
+                console.log("Full account data:", fullAccountData);
+                updateDebugInfo(fullAccountData, accountDatabase);
+            }
+            
+            // Display all account information
+            displayAccountInfo(fullAccountData);
+            
+            // Load and display ledger entries
+            displayLedgerEntries(fullAccountData);
+            
+            // Load and display edit history
+            displayEditHistory(fullAccountData.accountNumber, accountDatabase);
+            
+            // Display current user
+            displayCurrentUser(userDatabase);
+        }
+
+        function getAccountData() {
+            // First try to get from localStorage
+            let accountData = JSON.parse(localStorage.getItem('currentLedgerAccount')) || 
+                             JSON.parse(localStorage.getItem('currentLedgerAccount')); // Handle typo
+            
+            // If not in localStorage, check URL parameters
+            if (!accountData || !accountData.accountNumber) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const accountNumber = urlParams.get('accountNumber');
+                if (accountNumber) {
+                    accountData = { accountNumber: accountNumber };
+                    // Store in localStorage for consistency
+                    localStorage.setItem('currentLedgerAccount', JSON.stringify(accountData));
+                }
+            }
+            
+            return accountData;
+        }
+
+        function validateData(accountData, accountDatabase) {
+            if (!accountData) {
+                alert('No account selected!');
+                window.location.href = 'Employee_Accountants_Roster.html';
+                return false;
+            }
+            
+            if (!accountData.accountNumber) {
+                alert('Invalid account data! Missing account number.');
+                window.location.href = 'Employee_Accountants_Roster.html';
+                return false;
+            }
+            
+            if (!accountDatabase) {
+                alert('Account database not found!');
+                window.location.href = 'Employee_Accountants_Roster.html';
+                return false;
+            }
+            
+            if (!accountDatabase.accounts || accountDatabase.accounts.length === 0) {
+                alert('No accounts found in database!');
+                window.location.href = 'Employee_Accountants_Roster.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        function findAccountData(accountNumber, accountDatabase) {
+            if (!accountNumber || !accountDatabase || !accountDatabase.accounts) {
+                return null;
+            }
+            
+            const account = accountDatabase.accounts.find(
+                acc => acc.accountNumber === accountNumber
+            );
+            
+            if (DEBUG_MODE && !account) {
+                console.error(`Account ${accountNumber} not found in database. Available accounts:`);
+                console.log(accountDatabase.accounts.map(a => a.accountNumber));
+            }
+            
+            return account;
+        }
+
+        function displayAccountInfo(account) {
+            const accountInfoDiv = document.getElementById('accountInfo');
+            
+            if (!account) {
+                accountInfoDiv.innerHTML = '<p>Error: Account information not available</p>';
+                return;
+            }
+            
+            accountInfoDiv.innerHTML = `
+                <h3>${account.accountName || 'Unnamed Account'}</h3>
+                <div class="account-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Account Number:</span>
+                        <span>${account.accountNumber}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Category:</span>
+                        <span>${account.accountCategory || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Subcategory:</span>
+                        <span>${account.accountSubcategory || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Current Balance:</span>
+                        <span>$${(account.balance || 0).toFixed(2)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Initial Balance:</span>
+                        <span>$${(account.initialBalance || 0).toFixed(2)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status:</span>
+                        <span>${account.status || 'Active'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayLedgerEntries(account) {
+            const ledgerTableBody = document.getElementById('ledgerTableBody');
+            
+            if (!account) {
+                ledgerTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Error: Account data not available</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            if (account.ledgerEntries && account.ledgerEntries.length > 0) {
+                ledgerTableBody.innerHTML = account.ledgerEntries.map(entry => `
+                    <tr>
+                        <td>${entry.date ? new Date(entry.date).toLocaleDateString() : 'N/A'}</td>
+                        <td>${entry.description || 'No description'}</td>
+                        <td>${entry.debit ? '$' + entry.debit.toFixed(2) : ''}</td>
+                        <td>${entry.credit ? '$' + entry.credit.toFixed(2) : ''}</td>
+                        <td>$${(entry.balance || 0).toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                ledgerTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No ledger entries found for this account.</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function displayEditHistory(accountNumber, accountDatabase) {
+            const account = findAccountData(accountNumber, accountDatabase);
+            const historyContainer = document.getElementById("editHistory");
+            
+            if (!account) {
+                historyContainer.innerHTML = "<p>Error: Account not found</p>";
+                return;
+            }
+            
+            if (account?.editHistory?.length > 0) {
+                historyContainer.innerHTML = account.editHistory.map(edit => `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span>${edit.timestamp ? new Date(edit.timestamp).toLocaleString() : 'Unknown date'}</span>
+                            <span>Edited by: ${edit.editedBy || 'Unknown user'}</span>
+                        </div>
+                        <div class="history-changes">
+                            ${edit.changes ? Object.entries(edit.changes).map(([field, change]) => `
+                                <div class="history-change">
+                                    <span class="history-field">${field}:</span>
+                                    ${formatChangeValue(change.from)} → ${formatChangeValue(change.to)}
+                                </div>
+                            `).join('') : 'No change details available'}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                historyContainer.innerHTML = "<p>No edit history available for this account.</p>";
+            }
+        }
+
+        function displayCurrentUser(userDatabase) {
+            if (userDatabase?.users?.length > 0) {
+                const currentUser = userDatabase.users[userDatabase.users.length - 1];
+                document.getElementById('username').textContent = currentUser.id || 'Admin';
+            }
+        }
+
+        function formatChangeValue(value) {
+            if (value === null || value === undefined) return 'None';
+            if (typeof value === 'number') {
+                return value % 1 !== 0 ? '$' + value.toFixed(2) : '$' + value;
+            }
+            if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+            if (typeof value === 'object') return JSON.stringify(value);
+            return value;
+        }
+        
+        function toggleDebugInfo() {
+            const debugInfoDiv = document.getElementById('debugInfo');
+            if (debugInfoDiv.style.display === 'block') {
+                debugInfoDiv.style.display = 'none';
+            } else {
+                debugInfoDiv.style.display = 'block';
+                updateDebugInfo();
+            }
+        }
+        
+        function updateDebugInfo() {
+            const debugInfoDiv = document.getElementById('debugInfo');
+            const accountData = JSON.parse(localStorage.getItem('currentLedgerAccount')) || 
+                              JSON.parse(localStorage.getItem('currentLedgerAccount'));
+            const accountDatabase = JSON.parse(localStorage.getItem("accountDatabase"));
+            
+            debugInfoDiv.innerHTML = `
+                <h4>Debug Information</h4>
+                <p><strong>Current Account in localStorage:</strong> ${JSON.stringify(accountData)}</p>
+                <p><strong>URL Parameters:</strong> ${window.location.search}</p>
+                <p><strong>Account Database Count:</strong> ${accountDatabase?.accounts?.length || 0} accounts</p>
+                <p><strong>Last 5 Account Numbers:</strong> ${
+                    accountDatabase?.accounts?.slice(-5).map(a => a.accountNumber).join(', ') || 'N/A'
+                }</p>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #007BFF;
+            position: relative;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: url('Logo.png') no-repeat center;
+            background-size: contain;
+            margin-bottom: 1rem;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .login-container .link-button {
+            background-color: transparent;
+            color: #007BFF;
+            text-decoration: underline;
+            cursor: pointer;
+            border: none;
+            padding: 0.5rem;
+        }
+
+        #error-message {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .user-id-display {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 123, 255, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo"></div>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="button" onclick="signIn()">Sign In</button>
+        <button type="button" class="link-button" onclick="location.href='ForgotPassword.html'">Forgot Password?</button>
+        <button type="button" class="link-button" onclick="location.href='Login-New-Account.html'">Create New Account</button>
+        <p id="error-message"></p>
+        <div class="loading" id="loading">Logging in...</div>
+    </div>
+
+    <div class="user-id-display" id="user-id-display"></div>
+
+    <script>
+        // Check if user is already logged in when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser && currentUser.username) {
+                displayUserId(currentUser.username);
+            }
+
+            // Allow login on Enter key press
+            document.getElementById('password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    signIn();
+                }
+            });
+        });
+
+        function displayUserId(username) {
+            const userIdDisplay = document.getElementById('user-id-display');
+            userIdDisplay.textContent = `User: ${username}`;
+            userIdDisplay.style.display = 'block';
+        }
+
+        async function signIn() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMessage = document.getElementById('error-message');
+            const loading = document.getElementById('loading');
+
+            // Clear previous errors
+            errorMessage.style.display = 'none';
+
+            if (!username || !password) {
+                errorMessage.textContent = 'Please enter both username and password.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // Show loading indicator
+            loading.style.display = 'block';
+
+            try {
+                // Construct URL with parameters
+                const url = `https://fast-finance-e250d1a7d65a.herokuapp.com/users/login?user_id=${encodeURIComponent(username)}&hashed_pass=${encodeURIComponent(password)}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Unexpected response: ${text}`);
+                }
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Successful login - data should contain {message: 'role'}
+                    console.log('Login successful:', data);
+                    
+                    // Store user data in localStorage
+                    const userData = {
+                        username: username,
+                        role: data.message
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(userData));
+                    
+                    // Display user ID
+                    displayUserId(username);
+                    
+                    // Redirect based on role from message field
+                    switch(data.message.toLowerCase()) {
+                        case 'admin':
+                            location.href = 'Admin-Dashboard.html';
+                            break;
+                        case 'manager':
+                            location.href = 'Management-Dashboard.html';
+                            break;
+                        case 'accountant':
+                            location.href = 'Accountant-Dashboard.html';
+                            break;
+                        case 'customer':
+                            location.href = 'Customer-Dashboard.html';
+                            break;
+                        default:
+                            alert(`No dashboard available for role: ${data.message}`);
+                    }
+                } else {
+                    // Login failed
+                    errorMessage.textContent = data.message || 'Invalid username or password.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = 'An error occurred during login. Please try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

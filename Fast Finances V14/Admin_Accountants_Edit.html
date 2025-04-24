@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Account - Fast Finances</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+            height: 60px;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+        .header-title {
+            font-size: 22px;
+            margin: 0;
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        .user-info img {
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+        }
+        .user-name {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .container {
+            padding: 80px 20px 60px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: calc(100vh - 140px);
+            position: relative;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+        .form-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-roster {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        .status-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-toggle input {
+            width: auto;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo" class="logo">
+            <h1 class="header-title">Fast Finances</h1>
+        </div>
+        <div class="header-controls">
+            <div class="user-info">
+                <img src="admin.png" alt="Admin Picture" id="admin-pic">
+                <div class="user-name" id="admin-username">Loading Admin...</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Edit Account</h2>
+        
+        <div id="loading-spinner" class="spinner"></div>
+        <div id="error-message" class="status-message error"></div>
+        <div id="success-message" class="status-message success"></div>
+        
+        <div class="form-container">
+            <form id="account-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="account_id">Account ID</label>
+                        <input type="text" id="account_id" name="account_id" required readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="account_name">Account Name</label>
+                        <input type="text" id="account_name" name="account_name" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="order">Order</label>
+                        <input type="number" id="order" name="order" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="normal_side">Normal Side</label>
+                        <select id="normal_side" name="normal_side" required>
+                            <option value="debit">Debit</option>
+                            <option value="credit">Credit</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <input type="text" id="category" name="category" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sub_category">Sub Category</label>
+                        <input type="text" id="sub_category" name="sub_category" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="initial_balance">Initial Balance</label>
+                        <input type="number" id="initial_balance" name="initial_balance" value="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="statement">Statement</label>
+                        <select id="statement" name="statement" required>
+                            <option value="BS">Balance Sheet</option>
+                            <option value="IS">Income Statement</option>
+                            <option value="RE">Retained Earnings</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="comment">Comment</label>
+                    <textarea id="comment" name="comment"></textarea>
+                </div>
+
+                <div class="form-group status-toggle">
+                    <input type="checkbox" id="status" name="status" checked>
+                    <label for="status">Account Active</label>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-back" onclick="window.location.href='admin-dashboard.html'">Dashboard</button>
+                    <button type="button" class="btn btn-roster" onclick="window.location.href='Admin_Accountants_Roster.html'">Accountants Roster</button>
+                    <button type="submit" class="btn btn-submit">Update Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const elements = {
+            spinner: document.getElementById('loading-spinner'),
+            errorMessage: document.getElementById('error-message'),
+            successMessage: document.getElementById('success-message'),
+            form: document.getElementById('account-form'),
+            adminUsername: document.getElementById('admin-username'),
+            adminPic: document.getElementById('admin-pic')
+        };
+
+        // Current Admin Data
+        let currentAdmin = null;
+        let currentAccount = null;
+
+        // Display the currently logged in admin user
+        function displayLoggedInUser() {
+            try {
+                // Try all possible storage locations and keys
+                const adminData = sessionStorage.getItem("currentUser") || 
+                                 sessionStorage.getItem("user") ||
+                                 sessionStorage.getItem("admin") ||
+                                 localStorage.getItem("currentUser") ||
+                                 localStorage.getItem("user") ||
+                                 localStorage.getItem("admin");
+
+                if (adminData) {
+                    const parsed = JSON.parse(adminData);
+                    currentAdmin = parsed.user || parsed.data || parsed;
+                    
+                    // Ensure we have required fields
+                    if (!currentAdmin.user_id) {
+                        if (currentAdmin.id) {
+                            currentAdmin.user_id = currentAdmin.id;
+                        } else if (currentAdmin.username) {
+                            currentAdmin.user_id = currentAdmin.username;
+                        } else if (currentAdmin.email) {
+                            currentAdmin.user_id = currentAdmin.email;
+                        }
+                    }
+
+                    // Set display name
+                    const displayName = currentAdmin.first_name 
+                        ? `${currentAdmin.first_name} ${currentAdmin.last_name || ''}`.trim()
+                        : currentAdmin.username || currentAdmin.email || "Administrator";
+                        
+                    elements.adminUsername.textContent = displayName;
+                    
+                    // Set profile picture
+                    if (currentAdmin.profile_picture) {
+                        elements.adminPic.src = currentAdmin.profile_picture;
+                    } else {
+                        elements.adminPic.src = "admin.png";
+                    }
+                    
+                    return true;
+                } else {
+                    throw new Error("No admin user data found in storage");
+                }
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                elements.adminUsername.textContent = "Administrator";
+                showError("Failed to load admin session. Please log in again.");
+                return false;
+            }
+        }
+
+        // Load account data
+        async function loadAccountData() {
+            elements.spinner.style.display = 'block';
+            hideMessages();
+            
+            try {
+                // Get account data from localStorage (set by the previous page)
+                const accountData = localStorage.getItem('selectedAccount');
+                
+                if (!accountData) {
+                    throw new Error("No account selected. Please go back and select an account first.");
+                }
+
+                currentAccount = JSON.parse(accountData);
+                
+                // First try to load admin data if not already loaded
+                if (!currentAdmin || !currentAdmin.user_id) {
+                    const loaded = displayLoggedInUser();
+                    if (!loaded) {
+                        throw new Error("Admin session not properly loaded. Please log in again.");
+                    }
+                }
+
+                // Fetch account data using GET request with account_id parameter
+                const apiUrl = `https://fast-finance-e250d1a7d65a.herokuapp.com/accounts/get_one?account_id=${currentAccount.account_id}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    if (result.detail && Array.isArray(result.detail)) {
+                        const errorMessages = result.detail.map(err => `${err.loc ? err.loc.join('.') + ': ' : ''}${err.msg}`).join('\n');
+                        throw new Error(errorMessages || "Validation errors occurred");
+                    }
+                    throw new Error(result.message || "Server returned an error");
+                }
+
+                // Populate form with account data
+                document.getElementById('account_id').value = result.account_id;
+                document.getElementById('account_name').value = result.account_name;
+                document.getElementById('order').value = result.order;
+                document.getElementById('description').value = result.description || '';
+                document.getElementById('normal_side').value = result.normal_side.toLowerCase();
+                document.getElementById('category').value = result.category;
+                document.getElementById('sub_category').value = result.sub_category;
+                document.getElementById('initial_balance').value = result.initial_balance || 0;
+                document.getElementById('statement').value = result.statement;
+                document.getElementById('comment').value = result.comment || '';
+                document.getElementById('status').checked = result.status !== false;
+
+            } catch (error) {
+                console.error('Loading error:', error);
+                showError(error.message || "Failed to load account data. Please check the URL and try again.");
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        // Handle form submission
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            elements.spinner.style.display = 'block';
+            hideMessages();
+            
+            try {
+                // First try to load admin data if not already loaded
+                if (!currentAdmin || !currentAdmin.user_id) {
+                    const loaded = displayLoggedInUser();
+                    if (!loaded) {
+                        throw new Error("Admin session not properly loaded. Please log in again.");
+                    }
+                }
+
+                const formData = {
+                    account_id: document.getElementById('account_id').value,
+                    account_name: document.getElementById('account_name').value,
+                    order: parseInt(document.getElementById('order').value),
+                    description: document.getElementById('description').value,
+                    normal_side: document.getElementById('normal_side').value,
+                    category: document.getElementById('category').value,
+                    sub_category: document.getElementById('sub_category').value,
+                    initial_balance: parseFloat(document.getElementById('initial_balance').value),
+                    statement: document.getElementById('statement').value,
+                    comment: document.getElementById('comment').value,
+                    status: document.getElementById('status').checked
+                };
+
+                // Update account using PUT request with user_id parameter
+                const apiUrl = `https://fast-finance-e250d1a7d65a.herokuapp.com/accounts/update?user_id=${currentAdmin.user_id}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    if (result.detail && Array.isArray(result.detail)) {
+                        const errorMessages = result.detail.map(err => `${err.loc ? err.loc.join('.') + ': ' : ''}${err.msg}`).join('\n');
+                        throw new Error(errorMessages || "Validation errors occurred");
+                    }
+                    throw new Error(result.message || "Server returned an error");
+                }
+
+                showSuccess("Account updated successfully!");
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                showError(error.message || "Failed to update account. Please check your data and try again.");
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        // Helper functions
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+            setTimeout(() => elements.errorMessage.style.display = 'none', 5000);
+        }
+
+        function showSuccess(message) {
+            elements.successMessage.textContent = message;
+            elements.successMessage.style.display = 'block';
+            setTimeout(() => elements.successMessage.style.display = 'none', 3000);
+        }
+
+        function hideMessages() {
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("admin");
+            localStorage.removeItem("currentUser");
+            localStorage.removeItem("user");
+            localStorage.removeItem("admin");
+            window.location.href = 'login.html';
+        }
+
+        // Initialize the page
+        window.onload = () => {
+            displayLoggedInUser();
+            loadAccountData();
+            elements.form.addEventListener('submit', handleFormSubmit);
+        };
+    </script>
+</body>
+</html>
