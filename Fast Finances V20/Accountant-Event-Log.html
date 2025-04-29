@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Log - Fast Finances</title>
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            font-size: 14px;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+            height: 60px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .header-title {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        /* User Info Section */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Container */
+        .container {
+            padding: 70px 15px 60px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: calc(100vh - 130px);
+            position: relative;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Search and Controls */
+        .controls-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+            line-height: 1.4;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            font-size: 13px;
+            position: sticky;
+            top: 60px;
+            white-space: nowrap;
+        }
+
+        tr {
+            min-height: 50px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 15px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-mainmenu {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-page {
+            background-color: #e9ecef;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            margin: 0 3px;
+            min-width: 30px;
+        }
+
+        .btn-page.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .btn-export {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f7f7f7;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            border-top: 1px solid #ddd;
+            z-index: 999;
+            gap: 8px;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Status messages */
+        .status-message {
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            text-align: center;
+            display: none;
+            font-size: 13px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Status indicators */
+        .status-info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+
+        .status-warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .status-critical {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Column specific styles */
+        .user-column {
+            font-weight: 500;
+        }
+
+        /* New styles for change tables */
+        .changes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .changes-table th {
+            background-color: #e9ecef;
+            padding: 6px 8px;
+            text-align: left;
+        }
+
+        .changes-table td {
+            padding: 6px 8px;
+            border: 1px solid #dee2e6;
+            white-space: normal;
+        }
+
+        .field-name {
+            font-weight: bold;
+            color: #495057;
+            white-space: nowrap;
+        }
+
+        .old-value {
+            color: #dc3545;
+            text-decoration: line-through;
+            background-color: #fff5f5;
+        }
+
+        .new-value {
+            color: #28a745;
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        .no-change {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .change-section {
+            margin-bottom: 10px;
+            border-left: 3px solid #007bff;
+            padding-left: 8px;
+        }
+
+        .change-section-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #007bff;
+        }
+
+        /* Pagination controls */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .page-info {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        /* JSON Viewer Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow: auto;
+            border-radius: 5px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="logo-container">
+            <img src="Logo.png" alt="Logo" class="logo">
+            <h1 class="header-title">Fast Finances</h1>
+        </div>
+        <div class="header-controls">
+            <div class="user-info">
+                <img src="Accountant.png" alt="User Picture" id="Accountant-pic">
+                <div class="user-name" id="Accountant-username">Loading Accountant...</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Log Out</button>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container">
+        <h2>Event Log</h2>
+        
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="spinner" style="display: none;"></div>
+        
+        <!-- Status Messages -->
+        <div id="error-message" class="status-message error" style="display: none;"></div>
+        <div id="success-message" class="status-message success" style="display: none;"></div>
+        
+        <!-- Controls -->
+        <div class="controls-container">
+            <input type="text" id="search-input" class="search-box" placeholder="Search all fields...">
+            <button class="btn btn-mainmenu" onclick="fetchEvents()">Refresh</button>
+            <!-- <button class="btn btn-export" onclick="exportToJson()">Export Raw JSON</button> -->
+        </div>
+        
+        <!-- Events Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Severity</th>
+                    <th>Action</th>
+                    <th>Changes</th>
+                    <th>Raw Data</th>
+                </tr>
+            </thead>
+            <tbody id="events-table-body">
+                <tr>
+                    <td colspan="6" style="text-align: center;">Loading event data...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination Info -->
+        <div class="page-info" id="page-info">Showing 0-0 of 0 events</div>
+        
+        <!-- Pagination Controls -->
+        <div class="pagination" id="pagination-controls">
+            <button class="btn btn-page" id="prev-page" disabled>Previous</button>
+            <div id="page-buttons"></div>
+            <button class="btn btn-page" id="next-page" disabled>Next</button>
+        </div>
+    </div>
+
+    <!-- Action Buttons (Fixed at Bottom) -->
+    <div class="action-buttons">
+        <button class="btn btn-back" onclick="window.location.href='Accountant-Dashboard.html'">Main Menu</button>
+    </div>
+
+    <!-- JSON Viewer Modal -->
+    <!-- <div id="json-modal" class="modal"> -->
+        <!-- <div class="modal-content"> -->
+            <!-- <span class="close" onclick="closeModal()">&times;</span> -->
+            <!-- <h3>Raw Event Data</h3> -->
+            <!-- <pre id="json-content"></pre> -->
+        <!-- </div> -->
+    <!-- </div> -->
+
+    <script>
+        const API_EVENTS_URL = 'https://fast-finance-e250d1a7d65a.herokuapp.com/events';
+        const EVENTS_PER_PAGE = 50;
+        
+        // DOM Elements
+        const elements = {
+            spinner: document.getElementById('loading-spinner'),
+            errorMessage: document.getElementById('error-message'),
+            successMessage: document.getElementById('success-message'),
+            tableBody: document.getElementById('events-table-body'),
+            AccountantUsername: document.getElementById('Accountant-username'),
+            AccountantPic: document.getElementById('Accountant-pic'),
+            pageInfo: document.getElementById('page-info'),
+            paginationControls: document.getElementById('pagination-controls'),
+            prevPageBtn: document.getElementById('prev-page'),
+            nextPageBtn: document.getElementById('next-page'),
+            pageButtons: document.getElementById('page-buttons'),
+            searchInput: document.getElementById('search-input'),
+            jsonModal: document.getElementById('json-modal'),
+            jsonContent: document.getElementById('json-content')
+        };
+
+        // State
+        let allEvents = [];
+        let filteredEvents = [];
+        let currentPage = 1;
+        let totalPages = 1;
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // Get severity class
+        function getSeverityClass(severity) {
+            switch(severity?.toLowerCase()) {
+                case 'warning': return 'status-warning';
+                case 'critical': return 'status-critical';
+                default: return 'status-info';
+            }
+        }
+
+        // Display the currently logged in user
+        function displayLoggedInUser() {
+            try {
+                const currentUser = JSON.parse(sessionStorage.getItem("currentUser")) || 
+                                 JSON.parse(localStorage.getItem("currentUser"));
+                
+                if (currentUser) {
+                    const displayName = currentUser.first_name 
+                        ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
+                        : currentUser.username || "Accountant";
+                    elements.AccountantUsername.textContent = displayName;
+                    
+                    if (currentUser.profile_picture) {
+                        elements.AccountantPic.src = currentUser.profile_picture;
+                    }
+                } else {
+                    elements.AccountantUsername.textContent = "Accountant";
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                elements.AccountantUsername.textContent = "Accountant";
+            }
+        }
+
+        // Extract username from event data
+        function extractUsername(event) {
+            // First try to get from user_id field
+            if (event.user_id) {
+                if (typeof event.user_id === 'object') {
+                    return event.user_id.username || event.user_id._id || 'N/A';
+                }
+                return event.user_id;
+            }
+            
+            // Then try from from/to objects
+            if (event.from && event.from._id) {
+                if (typeof event.from._id === 'object') {
+                    return event.from._id.username || event.from._id._id || 'N/A';
+                }
+                return event.from._id;
+            }
+            
+            if (event.to && event.to._id) {
+                if (typeof event.to._id === 'object') {
+                    return event.to._id.username || event.to._id._id || 'N/A';
+                }
+                return event.to._id;
+            }
+            
+            // Then try from details if it's an object
+            if (event.details && typeof event.details === 'object') {
+                if (event.details.username) return event.details.username;
+                if (event.details.user_id) return event.details.user_id;
+                if (event.details.user) return event.details.user;
+            }
+            
+            return 'System';
+        }
+
+        // Extract action description from event
+        function extractAction(event) {
+            if (event.event_type) {
+                return event.event_type.replace(/_/g, ' ');
+            }
+            
+            if (event.from && event.to) {
+                return "Update";
+            }
+            
+            if (event.to && !event.from) {
+                return "Create";
+            }
+            
+            if (event.action) {
+                return event.action;
+            }
+            
+            return "Event";
+        }
+
+        // Extract description from event
+        function extractDescription(event) {
+            // For login events
+            if (event.event_type && event.event_type.toLowerCase().includes('login')) {
+                const ip = event.ip || event.details?.ip || 'unknown';
+                const device = event.user_agent || event.details?.user_agent || 'unknown device';
+                return `User logged in from IP: ${ip}\nDevice: ${device}`;
+            }
+            
+            // For logout events
+            if (event.event_type && event.event_type.toLowerCase().includes('logout')) {
+                return `User logged out`;
+            }
+            
+            // For password changes
+            if (event.event_type && event.event_type.toLowerCase().includes('password')) {
+                return "Password was changed";
+            }
+            
+            // For simple string details
+            if (typeof event.details === 'string') {
+                return event.details;
+            }
+            
+            // For object details
+            if (event.details && typeof event.details === 'object') {
+                // Remove user-related fields we're already displaying elsewhere
+                const {user_id, username, _id, user, ip, user_agent, ...rest} = event.details;
+                if (Object.keys(rest).length > 0) {
+                    return JSON.stringify(rest, null, 2);
+                }
+            }
+            
+            // For create/update events
+            if (event.to && !event.from) {
+                return "New item created";
+            }
+            
+            if (event.from && event.to) {
+                return "Item updated";
+            }
+            
+            return "No additional details";
+        }
+
+        // Format changes between two objects
+        function formatChanges(beforeObj, afterObj) {
+            if (!beforeObj && !afterObj) return 'N/A';
+            
+            // Remove sensitive/internal fields
+            const cleanBefore = beforeObj ? {...beforeObj} : {};
+            const cleanAfter = afterObj ? {...afterObj} : {};
+            
+            delete cleanBefore._id;
+            delete cleanBefore.hashed_pass;
+            delete cleanBefore.past_passwords;
+            delete cleanBefore.__v;
+            delete cleanAfter._id;
+            delete cleanAfter.hashed_pass;
+            delete cleanAfter.past_passwords;
+            delete cleanAfter.__v;
+            
+            // If both objects are empty after cleaning
+            if (Object.keys(cleanBefore).length === 0 && Object.keys(cleanAfter).length === 0) {
+                return 'N/A';
+            }
+            
+            // If only after exists (creation)
+            if (!beforeObj && afterObj) {
+                return formatCreation(cleanAfter);
+            }
+            
+            // If only before exists (deletion)
+            if (beforeObj && !afterObj) {
+                return formatDeletion(cleanBefore);
+            }
+            
+            // Compare objects for changes
+            let tableHTML = `
+                <table class="changes-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Old Value</th>
+                            <th>New Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            const allKeys = new Set([...Object.keys(cleanBefore), ...Object.keys(cleanAfter)]);
+            let hasChanges = false;
+            
+            for (const key of allKeys) {
+                const beforeValue = cleanBefore[key];
+                const afterValue = cleanAfter[key];
+                
+                // Skip if both values are empty/undefined
+                if (!beforeValue && !afterValue) continue;
+                
+                const beforeStr = JSON.stringify(beforeValue);
+                const afterStr = JSON.stringify(afterValue);
+                const isChanged = beforeStr !== afterStr;
+                
+                if (isChanged) {
+                    hasChanges = true;
+                    tableHTML += `
+                        <tr>
+                            <td class="field-name">${key}</td>
+                            <td class="old-value">${beforeValue === undefined ? 'N/A' : formatValue(beforeValue)}</td>
+                            <td class="new-value">${afterValue === undefined ? 'N/A' : formatValue(afterValue)}</td>
+                        </tr>
+                    `;
+                } else {
+                    tableHTML += `
+                        <tr>
+                            <td class="field-name">${key}</td>
+                            <td colspan="2" class="no-change">No change (${formatValue(beforeValue)})</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            return hasChanges ? tableHTML : '<div>No visible changes detected</div>';
+        }
+
+        // Format a creation event
+        function formatCreation(afterObj) {
+            let tableHTML = `
+                <table class="changes-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const [key, value] of Object.entries(afterObj)) {
+                tableHTML += `
+                    <tr>
+                        <td class="field-name">${key}</td>
+                        <td class="new-value">${formatValue(value)}</td>
+                    </tr>
+                `;
+            }
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            return tableHTML;
+        }
+
+        // Format a deletion event
+        function formatDeletion(beforeObj) {
+            let tableHTML = `
+                <table class="changes-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const [key, value] of Object.entries(beforeObj)) {
+                tableHTML += `
+                    <tr>
+                        <td class="field-name">${key}</td>
+                        <td class="old-value">${formatValue(value)}</td>
+                    </tr>
+                `;
+            }
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            return tableHTML;
+        }
+
+        // Helper function to format values for display
+        function formatValue(value) {
+            if (value === null) return 'null';
+            if (value === undefined) return 'undefined';
+            if (value === '') return '"" (empty string)';
+            
+            if (typeof value === 'object') {
+                if (Array.isArray(value)) {
+                    return value.length > 0 
+                        ? `[${value.map(v => formatValue(v)).join(', ')}]`
+                        : '[] (empty array)';
+                }
+                return JSON.stringify(value, null, 2);
+            }
+            
+            return value.toString();
+        }
+
+        // Search events based on input
+        function searchEvents() {
+            const searchTerm = elements.searchInput.value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredEvents = [...allEvents];
+            } else {
+                filteredEvents = allEvents.filter(event => {
+                    // Convert all relevant fields to string and check for matches
+                    const eventString = JSON.stringify(event).toLowerCase();
+                    return eventString.includes(searchTerm);
+                });
+            }
+            
+            currentPage = 1;
+            totalPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
+            updatePagination();
+            renderEvents();
+        }
+
+        // Fetch events from API
+        async function fetchEvents() {
+            elements.spinner.style.display = 'block';
+            hideAllMessages();
+            
+            try {
+                const response = await fetch(API_EVENTS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    allEvents = [];
+                    showSuccess("No events found in the system");
+                } else {
+                    // Sort events by timestamp (newest first)
+                    allEvents = data.sort((a, b) => {
+                        const dateA = new Date(a.timestamp || `${a.date} ${a.time}`);
+                        const dateB = new Date(b.timestamp || `${b.date} ${b.time}`);
+                        return dateB - dateA;
+                    });
+                    
+                    showSuccess(`Loaded ${allEvents.length} events successfully`);
+                }
+                
+                // Initialize search and pagination
+                filteredEvents = [...allEvents];
+                totalPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
+                currentPage = 1;
+                updatePagination();
+                renderEvents();
+            } catch (error) {
+                handleFetchError(error);
+            } finally {
+                elements.spinner.style.display = 'none';
+            }
+        }
+
+        // Render events for current page
+        function renderEvents() {
+            const tableBody = document.getElementById('events-table-body');
+            tableBody.innerHTML = '';
+
+            if (filteredEvents.length === 0) {
+                const noResultsText = allEvents.length === 0 
+                    ? 'No events found' 
+                    : 'No matching events found';
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">${noResultsText}</td></tr>`;
+                return;
+            }
+
+            const startIdx = (currentPage - 1) * EVENTS_PER_PAGE;
+            const endIdx = Math.min(startIdx + EVENTS_PER_PAGE, filteredEvents.length);
+            const pageEvents = filteredEvents.slice(startIdx, endIdx);
+
+            pageEvents.forEach(event => {
+                const severityClass = getSeverityClass(event.severity);
+                const severityText = event.severity || 'Info';
+                const user = extractUsername(event);
+                const action = extractAction(event);
+                const changesHtml = (event.from || event.to) ? formatChanges(event.from, event.to) : 'N/A';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(event.timestamp || `${event.date} ${event.time}`)}</td>
+                    <td class="user-column">${user}</td>
+                    <td class="${severityClass}">${severityText}</td>
+                    <td>${action}</td>
+                    <td>${changesHtml}</td>
+                    <td><button class="btn btn-page" onclick="showRawData(${JSON.stringify(event).replace(/"/g, '&quot;')})">View</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update page info
+            elements.pageInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${filteredEvents.length} events`;
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            elements.pageButtons.innerHTML = '';
+            
+            // Previous button
+            elements.prevPageBtn.disabled = currentPage === 1;
+            
+            // Page buttons
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            // Adjust if we're at the end
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `btn btn-page ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    updatePagination();
+                    renderEvents();
+                };
+                elements.pageButtons.appendChild(pageBtn);
+            }
+            
+            // Next button
+            elements.nextPageBtn.disabled = currentPage === totalPages;
+        }
+
+        // Show raw JSON data in modal
+        function showRawData(eventData) {
+            elements.jsonContent.textContent = JSON.stringify(eventData, null, 2);
+            elements.jsonModal.style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            elements.jsonModal.style.display = 'none';
+        }
+
+        // Export all events as JSON file
+        function exportToJson() {
+            if (allEvents.length === 0) {
+                showError("No events to export");
+                return;
+            }
+            
+            const dataStr = JSON.stringify(allEvents, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `fast-finances-events-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // Handle fetch errors
+        function handleFetchError(error) {
+            console.error('API Error:', error);
+            let errorMsg = error.message || 'Failed to fetch event data';
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMsg = "Cannot connect to the server. Please check your internet connection.";
+            }
+
+            showError(errorMsg);
+            elements.tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: red;">
+                        ${errorMsg}
+                        <br>
+                        <button class="btn btn-mainmenu" onclick="fetchEvents()">Retry Now</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Helper functions
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorMessage.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            elements.successMessage.textContent = message;
+            elements.successMessage.style.display = 'block';
+            setTimeout(() => elements.successMessage.style.display = 'none', 3000);
+        }
+
+        function hideAllMessages() {
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.removeItem("currentUser");
+            localStorage.removeItem("currentUser");
+            window.location.href = 'Login.html';
+        }
+
+        // Initialize the page
+        window.onload = () => {
+            displayLoggedInUser();
+            
+            // Set up search input handler
+            elements.searchInput.addEventListener('input', searchEvents);
+            
+            // Set up pagination button handlers
+            elements.prevPageBtn.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updatePagination();
+                    renderEvents();
+                }
+            };
+            
+            elements.nextPageBtn.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updatePagination();
+                    renderEvents();
+                }
+            };
+            
+            // Close modal when clicking outside
+            window.onclick = (event) => {
+                if (event.target === elements.jsonModal) {
+                    closeModal();
+                }
+            };
+            
+            fetchEvents();
+        };
+    </script>
+</body>
+</html>

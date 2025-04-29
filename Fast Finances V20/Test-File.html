@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload and Download</title>
+    <style>
+        .file-info {
+            margin: 10px 0;
+            font-style: italic;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>File Upload and Download</h1>
+        
+        <div class="section">
+            <h2>Upload File to API</h2>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="fileInput" name="file" required>
+                <div class="file-info" id="fileInfo"></div>
+                <button type="submit">Upload File</button>
+            </form>
+            <div id="uploadMessage" style="margin-top: 20px;"></div>
+        </div>
+
+        <div class="section">
+            <h2>Download File from API</h2>
+            <div>
+                <input type="text" id="fileIdInput" placeholder="Enter file ID to download">
+                <button id="downloadBtn">Download File</button>
+            </div>
+            <div id="downloadMessage" style="margin-top: 20px;"></div>
+            <div id="downloadResult" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const MAX_FILE_SIZE = 16 * 1024 * 1024; // 16 MB in bytes
+        
+        // Upload functionality
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const fileInfoDiv = document.getElementById('fileInfo');
+            
+            if (file) {
+                fileInfoDiv.textContent = `Selected file: ${file.name} (${formatFileSize(file.size)})`;
+                
+                if (file.size > MAX_FILE_SIZE) {
+                    fileInfoDiv.textContent += ' - File is too large!';
+                    fileInfoDiv.className = 'error';
+                    e.target.value = ''; // Clear the file input
+                } else {
+                    fileInfoDiv.className = '';
+                }
+            } else {
+                fileInfoDiv.textContent = '';
+            }
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const responseDiv = document.getElementById('uploadMessage');
+            
+            if (!file) {
+                responseDiv.textContent = 'Please select a file first.';
+                responseDiv.className = 'error';
+                return;
+            }
+            
+            if (file.size > MAX_FILE_SIZE) {
+                responseDiv.textContent = 'Error: File size exceeds 16 MB limit.';
+                responseDiv.className = 'error';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            responseDiv.textContent = 'Uploading file...';
+            responseDiv.className = '';
+            
+            fetch('https://fast-finance-e250d1a7d65a.herokuapp.com/upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message || 'Network response was not ok');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                responseDiv.textContent = 'Upload successful! Response: ' + JSON.stringify(data);
+                responseDiv.className = 'success';
+                // Clear the file input after successful upload
+                fileInput.value = '';
+                document.getElementById('fileInfo').textContent = '';
+                
+                // If the response contains a file_id, populate the download field
+                if (data.file_id) {
+                    document.getElementById('fileIdInput').value = data.file_id;
+                }
+            })
+            .catch(error => {
+                responseDiv.textContent = 'Error: ' + error.message;
+                responseDiv.className = 'error';
+            });
+        });
+        
+        // Download functionality
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const fileId = document.getElementById('fileIdInput').value.trim();
+            const messageDiv = document.getElementById('downloadMessage');
+            const resultDiv = document.getElementById('downloadResult');
+            
+            if (!fileId) {
+                messageDiv.textContent = 'Please enter a file ID.';
+                messageDiv.className = 'error';
+                return;
+            }
+            
+            messageDiv.textContent = 'Downloading file...';
+            messageDiv.className = '';
+            resultDiv.textContent = '';
+            
+            fetch(`https://fast-finance-e250d1a7d65a.herokuapp.com/download_file?file_id=${encodeURIComponent(fileId)}`)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message || 'File not found');
+                    });
+                }
+                
+                // Handle different response types
+                const contentType = response.headers.get('content-type');
+                if (contentType.includes('application/json')) {
+                    return response.json().then(data => {
+                        return { type: 'json', data: data };
+                    });
+                } else {
+                    return response.blob().then(blob => {
+                        // Try to get filename from content-disposition header
+                        let filename = fileId;
+                        const contentDisposition = response.headers.get('content-disposition');
+                        if (contentDisposition) {
+                            const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                            if (filenameMatch && filenameMatch[1]) {
+                                filename = filenameMatch[1];
+                            }
+                        }
+                        return { type: 'blob', data: blob, filename: filename };
+                    });
+                }
+            })
+            .then(result => {
+                if (result.type === 'json') {
+                    // If the response is JSON (might be metadata or error)
+                    messageDiv.textContent = 'Download successful (JSON data):';
+                    messageDiv.className = 'success';
+                    resultDiv.textContent = JSON.stringify(result.data, null, 2);
+                } else {
+                    // If the response is a file (blob)
+                    messageDiv.textContent = 'Download successful!';
+                    messageDiv.className = 'success';
+                    
+                    // Create a download link for the blob
+                    const url = window.URL.createObjectURL(result.data);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = result.filename || fileId;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                    
+                    resultDiv.textContent = `File downloaded successfully.`;
+                }
+            })
+            .catch(error => {
+                messageDiv.textContent = 'Error: ' + error.message;
+                messageDiv.className = 'error';
+            });
+        });
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Transaction Lookup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            height: 30px;
+            margin-right: 15px;
+        }
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .page-title {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .input-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .input-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .input-section input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .btn {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0069d9;
+        }
+        .btn-raw {
+            background: #6c757d;
+            margin-left: 10px;
+        }
+        .btn-raw:hover {
+            background: #5a6268;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.3);
+            border-radius: 50%;
+            border-top-color: #007bff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            color: #dc3545;
+            padding: 15px;
+            background: #ffeeee;
+            border: 1px solid #ffdddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .journal-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .transaction-table th, .transaction-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .transaction-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .right-justified {
+            text-align: right;
+        }
+        .debit {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .credit {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .button-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .btn-back {
+            background: #6c757d;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+        }
+        .btn-download-all {
+            background: #28a745;
+            margin-left: 10px;
+        }
+        .btn-download-all:hover {
+            background: #218838;
+        }
+        .btn-download-all:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .clickable-ref {
+            color: #007bff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .clickable-ref:hover {
+            color: #0056b3;
+        }
+        .amount-column {
+            width: 120px;
+        }
+        #rawJsonContainer {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        #rawJson {
+            font-family: monospace;
+            white-space: pre;
+        }
+        .journal-page-col {
+            width: 150px;
+        }
+        .highlight {
+            background-color: #fffacd;
+            font-weight: bold;
+        }
+        .file-list-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .file-selector {
+            margin-bottom: 15px;
+        }
+        .file-selector select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            min-width: 250px;
+        }
+        .file-download-btn {
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .file-download-btn:hover {
+            background: #218838;
+        }
+        .file-download-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .no-files-message {
+            color: #6c757d;
+            font-style: italic;
+        }
+        .account-highlight {
+            background-color: #e6f7ff;
+            font-weight: bold;
+        }
+        .right-justified {
+         text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="Logo.png" alt="Fast Finances Logo" class="logo">
+            <span class="company-name">Fast Finances</span>
+        </div>
+        <div class="user-info">
+            <img src="Admin.png" alt="Accountant Profile">
+            <span id="username">Accountant</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Journal Transaction Lookup</h1>
+        
+        <div class="input-section">
+            <label for="journalId">Enter Journal ID:</label>
+            <input type="text" id="journalId" placeholder="e.g., 123">
+            <button class="btn" onclick="fetchTransaction()">Get Transactions</button>
+            <button class="btn btn-raw" id="toggleRawBtn" onclick="toggleRawJson()" disabled>Show Raw JSON</button>
+            <div id="loading" class="loading"></div>
+        </div>
+        
+        <div id="error" class="error"></div>
+        
+        <div id="results" style="display: none;">
+            <div id="journalHeader" class="journal-header"></div>
+            
+            <div id="fileListContainer" class="file-list-container" style="display: none;">
+                <h3>Attached Files</h3>
+                <div id="fileSelector" class="file-selector" style="display: none;">
+                    <select id="fileDropdown"></select>
+                    <button class="file-download-btn" id="downloadSelectedBtn" onclick="downloadSelectedFile()">Download Selected</button>
+                </div>
+                <p id="noFilesMessage" class="no-files-message" style="display: none;">No files attached to this journal entry.</p>
+            </div>
+            
+            <table class="transaction-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Account Name</th>
+                        <th>Post Reference</th>
+                        <th class="amount-column">Debit</th>
+                        <th class="amount-column">Credit</th>
+                        <th class="journal-page-col">Journal Page</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsBody">
+                </tbody>
+            </table>
+            
+            <div id="rawJsonContainer">
+                <div class="raw-json-title">Raw JSON Data</div>
+                <div class="raw-json-content" id="rawJson"></div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="btn btn-back" onclick="window.location.href='Admin-Journal.html'">Back to Journal</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentJournalData = null;
+        let currentHighlightedRef = null;
+        let currentFileList = [];
+        let searchParams = null;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentUser();
+            
+            // Check if we have search parameters from ledger page
+            const searchParamsJson = localStorage.getItem('journalSearchParams');
+            if (searchParamsJson) {
+                searchParams = JSON.parse(searchParamsJson);
+                localStorage.removeItem('journalSearchParams');
+                
+                // If we have a journal ID from the ledger, use it
+                if (searchParams.journalPage) {
+                    document.getElementById('journalId').value = searchParams.journalPage;
+                    fetchTransaction();
+                }
+            }
+            
+            // Check if journal ID was passed from previous page
+            const journalId = localStorage.getItem('selectedJournal');
+            if (journalId) {
+                document.getElementById('journalId').value = journalId;
+                fetchTransaction();
+                localStorage.removeItem('selectedJournal');
+            }
+            
+            // Check for highlighted reference from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightRef = urlParams.get('highlight');
+            if (highlightRef) {
+                setTimeout(() => {
+                    highlightReference(highlightRef);
+                }, 500);
+            }
+        });
+
+        // Load current user from localStorage
+        function loadCurrentUser() {
+            const userData = localStorage.getItem('currentUser');
+            if (!userData) {
+                throw new Error("User not logged in. Please login first.");
+            }
+            currentUser = JSON.parse(userData);
+            document.getElementById('username').textContent = currentUser.name || currentUser.username || "Accountant";
+        }
+
+        async function fetchTransaction() {
+            const journalId = document.getElementById('journalId').value.trim();
+            const resultsDiv = document.getElementById('results');
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            const toggleRawBtn = document.getElementById('toggleRawBtn');
+            
+            // Clear previous results and errors
+            resultsDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            document.getElementById('rawJsonContainer').style.display = 'none';
+            document.getElementById('fileListContainer').style.display = 'none';
+            toggleRawBtn.disabled = true;
+            
+            if (!journalId) {
+                showError('Please enter a Journal ID');
+                return;
+            }
+            
+            loadingDiv.style.display = 'block';
+            
+            try {
+                const apiUrl = `https://fast-finance-e250d1a7d65a.herokuapp.com/journal/get_one?journal_id=${encodeURIComponent(journalId)}`;
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    if (response.status === 422) {
+                        const errorMessage = errorData.detail?.[0]?.msg || 
+                                           errorData.message || 
+                                           'Invalid input data. Please check the Journal ID format.';
+                        throw new Error(errorMessage);
+                    }
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Store the raw data for JSON display
+                currentJournalData = data;
+                toggleRawBtn.disabled = false;
+                
+                displayResults(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const journalHeaderDiv = document.getElementById('journalHeader');
+            const transactionsBody = document.getElementById('transactionsBody');
+            const fileListContainer = document.getElementById('fileListContainer');
+            const fileSelectorDiv = document.getElementById('fileSelector');
+            const fileDropdown = document.getElementById('fileDropdown');
+            const noFilesMessage = document.getElementById('noFilesMessage');
+            
+            // Get the journal page from the first transaction if not at the root level
+            const journalPage = data.journal_page || 
+                              (data.transactions && data.transactions.length > 0 ? data.transactions[0].journal_page : 'N/A');
+            
+            // Display journal header information with description below comment
+            journalHeaderDiv.innerHTML = `
+                <p><strong>Journal ID:</strong> ${data.journal_id || 'N/A'}</p>
+                <p><strong>Date:</strong> ${formatDate(data.date) || 'N/A'}</p>
+                <p><strong>Journal Page:</strong> <span class="clickable-ref" onclick="navigateToJournalPage('${journalPage}')">${journalPage || 'N/A'}</span></p>
+                <p><strong>Status:</strong> ${formatStatus(data.approved_status)}</p>
+                <p><strong>Comment:</strong> ${data.comment || 'No comment'}</p>
+                <p><strong>Description:</strong> ${data.description || 'No description'}</p>
+            `;
+            
+            // Display file list if available
+            if (data.file_list && data.file_list.length > 0) {
+                currentFileList = data.file_list;
+                fileDropdown.innerHTML = '';
+                
+                // Sort files by date (assuming newer files are added to the end)
+                const sortedFiles = [...currentFileList].reverse();
+                
+                sortedFiles.forEach((fileId, index) => {
+                    const option = document.createElement('option');
+                    option.value = fileId;
+                    option.textContent = `File ${sortedFiles.length - index} (${fileId})`;
+                    fileDropdown.appendChild(option);
+                });
+                
+                fileListContainer.style.display = 'block';
+                fileSelectorDiv.style.display = 'block';
+                noFilesMessage.style.display = 'none';
+            } else {
+                fileListContainer.style.display = 'block';
+                fileSelectorDiv.style.display = 'none';
+                noFilesMessage.style.display = 'block';
+            }
+            
+            // Display transactions in table format
+            transactionsBody.innerHTML = '';
+            if (data.transactions && data.transactions.length > 0) {
+                data.transactions.forEach((transaction) => {
+                    const amount = transaction.amount || transaction.balance || 0;
+                    const txJournalPage = transaction.journal_page || journalPage || 'N/A';
+                    const postRef = transaction.post_reference || 'N/A';
+                    
+                    // Check if this transaction matches the search parameters from ledger
+                    const isHighlighted = searchParams && (
+                        (searchParams.accountId && transaction.account_id === searchParams.accountId) ||
+                        (searchParams.postReference && transaction.post_reference === searchParams.postReference)
+                    );
+                    
+                    const row = document.createElement('tr');
+                    if (isHighlighted) {
+                        row.classList.add('account-highlight');
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${formatDate(transaction.date || data.date) || 'N/A'}</td>
+                        <td class="clickable-ref ${isHighlighted ? 'highlight' : ''}" onclick="navigateToAccount('${transaction.account_id || 'N/A'}')">
+                            ${transaction.account_name || 'N/A'}
+                        </td>
+                        <td class="clickable-ref ${isHighlighted ? 'highlight' : ''}" onclick="navigateToPostReference('${postRef}')">
+                            ${postRef}
+                        </td>
+                        <td class="right-justified ${transaction.side === 'debit' ? 'debit' : ''}">
+                         ${transaction.side === 'debit' ? formatCurrency(amount) : ''}
+                        </td>
+                        <td class="right-justified ${transaction.side === 'credit' ? 'credit' : ''}">
+                         ${transaction.side === 'credit' ? formatCurrency(amount) : ''}
+                        </td>
+                        <td class="clickable-ref" onclick="navigateToJournalPage('${txJournalPage}')">
+                            ${txJournalPage}
+                        </td>
+                    `;
+                    transactionsBody.appendChild(row);
+                    
+                    // Scroll to highlighted row if it exists
+                    if (isHighlighted) {
+                        setTimeout(() => {
+                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                    }
+                });
+            } else {
+                transactionsBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center;">No transactions found for this journal entry.</td>
+                    </tr>
+                `;
+            }
+            
+            resultsDiv.style.display = 'block';
+            
+            // Check if we need to highlight any references
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightRef = urlParams.get('highlight');
+            if (highlightRef) {
+                highlightReference(highlightRef);
+            }
+        }
+
+        // Navigate to account ledger
+        function navigateToAccount(accountId) {
+            if (!accountId || accountId === 'N/A') return;
+            
+            // Store the account in localStorage
+            localStorage.setItem('selectedAccount', JSON.stringify({
+                account_id: accountId
+            }));
+            
+            window.location.href = `Admin_Account_Ledger.html?account_id=${encodeURIComponent(accountId)}`;
+        }
+
+        // Download the selected file
+        function downloadSelectedFile() {
+            const fileDropdown = document.getElementById('fileDropdown');
+            const selectedFileId = fileDropdown.value;
+            
+            if (!selectedFileId) {
+                alert('Please select a file to download');
+                return;
+            }
+            
+            const downloadBtn = document.getElementById('downloadSelectedBtn');
+            const originalText = downloadBtn.textContent;
+            
+            // Show loading state
+            downloadBtn.textContent = 'Downloading...';
+            downloadBtn.disabled = true;
+            
+            fetch(`https://fast-finance-e250d1a7d65a.herokuapp.com/download_file?file_id=${encodeURIComponent(selectedFileId)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('File download failed');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    // Try to get a filename from the dropdown text
+                    const selectedOption = fileDropdown.options[fileDropdown.selectedIndex];
+                    let filename = 'document';
+                    if (selectedOption.text.includes('(')) {
+                        filename = selectedOption.text.split('(')[0].trim();
+                    }
+                    
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                })
+                .catch(error => {
+                    alert('Error downloading file: ' + error.message);
+                })
+                .finally(() => {
+                    // Restore button state
+                    downloadBtn.textContent = originalText;
+                    downloadBtn.disabled = false;
+                });
+        }
+
+        // Navigate to journal page reference
+        function navigateToJournalPage(journalPage) {
+            if (!journalPage || journalPage === 'N/A') return;
+            window.location.href = `Admin-Journal.html?highlight=${encodeURIComponent(journalPage)}`;
+        }
+
+        // Navigate to post reference
+        function navigateToPostReference(postRef) {
+            if (!postRef || postRef === 'N/A') return;
+            window.location.href = `Admin-Journal.html?highlight=${encodeURIComponent(postRef)}`;
+        }
+
+        // Highlight matching references in the table
+        function highlightReference(ref) {
+            // Remove previous highlight if any
+            if (currentHighlightedRef) {
+                const prevElements = document.querySelectorAll(`.highlight`);
+                prevElements.forEach(el => {
+                    el.classList.remove('highlight');
+                });
+            }
+            
+            if (!ref) return;
+            
+            currentHighlightedRef = ref;
+            
+            // Find all elements that match either post reference or journal page
+            const refElements = document.querySelectorAll(`.clickable-ref`);
+            let found = false;
+            
+            refElements.forEach(el => {
+                if (el.textContent.trim() === ref) {
+                    el.classList.add('highlight');
+                    found = true;
+                    
+                    // Scroll to the first matching element
+                    if (!document.querySelector('.highlighted-scrolled')) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        el.classList.add('highlighted-scrolled');
+                    }
+                }
+            });
+            
+            if (!found) {
+                console.log(`No matching reference found for: ${ref}`);
+            }
+        }
+
+        // Toggle raw JSON display
+        function toggleRawJson() {
+            const rawJsonContainer = document.getElementById('rawJsonContainer');
+            const toggleBtn = document.getElementById('toggleRawBtn');
+            
+            if (rawJsonContainer.style.display === 'none') {
+                document.getElementById('rawJson').textContent = JSON.stringify(currentJournalData, null, 2);
+                rawJsonContainer.style.display = 'block';
+                toggleBtn.textContent = 'Hide Raw JSON';
+            } else {
+                rawJsonContainer.style.display = 'none';
+                toggleBtn.textContent = 'Show Raw JSON';
+            }
+        }
+
+        // Format currency with commas and 2 decimal places
+        function formatCurrency(amount) {
+            if (amount === undefined || amount === null) return '';
+            return `$${parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        }
+
+        // Helper function to format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                if (dateString.includes('/')) {
+                    const [year, day, month] = dateString.split('/');
+                    return `${month}/${day}/${year}`;
+                }
+                const date = new Date(dateString);
+                return date.toLocaleDateString();
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        // Format status display
+        function formatStatus(status) {
+            if (!status) return 'N/A';
+            return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
